@@ -1,0 +1,162 @@
+import React, { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
+import { Stethoscope, ShieldAlert, Radio, Clock, AlertTriangle, X, Check } from 'lucide-react';
+
+export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess }) {
+  const { t } = useLanguage();
+  const [responderName, setResponderName] = useState('Dr. Rajesh Mehta (EMT)');
+  const [responderOrg, setResponderOrg] = useState('108 GVK EMRI Emergency Response');
+  const [responderBadge, setResponderBadge] = useState('EMT-9082');
+  const [reason, setReason] = useState('Patient unconscious at accident scene; suspected traumatic head injury.');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const res = await fetch(`/api/emergency/${vaultId}/break-glass`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          responder_name: responderName,
+          responder_org: responderOrg,
+          responder_badge: responderBadge,
+          reason,
+          location_address: 'Emergency Response Location'
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Break-Glass failed');
+      }
+
+      onBreakGlassSuccess(data);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 modal-backdrop animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="break-glass-title"
+    >
+      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border-4 border-red-600 relative overflow-hidden">
+        {/* Top Warning Strip */}
+        <div className="flex items-center justify-between pb-3 border-b border-red-200">
+          <div className="flex items-center gap-2 text-red-600">
+            <Radio className="w-6 h-6 animate-pulse" />
+            <h3 id="break-glass-title" className="text-xl font-black uppercase tracking-tight">
+              {t('break_glass_btn')}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close break glass modal"
+            className="p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Trade-Off & Legal Accountability Disclosure Banner */}
+        <div className="mt-4 p-4 rounded-2xl bg-red-50 border-2 border-red-200 text-xs text-red-900 leading-relaxed space-y-2">
+          <div className="flex items-center gap-2 font-black text-red-700 uppercase tracking-wider">
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            <span>Speed vs Security Architectural Trade-Off</span>
+          </div>
+          <p>
+            To guarantee immediate lifesaver access in acute ER or trauma cases, Break-Glass unlocks clinical data in <strong>under 2 seconds without waiting for family OTP</strong>.
+          </p>
+          <p className="font-semibold text-red-950">
+            <strong>Mandatory Accountability:</strong> An automated emergency broadcast (SMS + IVR Call) is dispatched immediately to the patient and all registered family members with your details. Session valid for <strong>30 minutes</strong> and permanently audited.
+          </p>
+        </div>
+
+        {error && (
+          <div className="mt-4 p-3 rounded-xl bg-red-100 text-xs text-red-800 font-bold">
+            {error}
+          </div>
+        )}
+
+        {/* Form Inputs */}
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                Responder Name
+              </label>
+              <input
+                type="text"
+                value={responderName}
+                onChange={(e) => setResponderName(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                Badge / Reg Number
+              </label>
+              <input
+                type="text"
+                value={responderBadge}
+                onChange={(e) => setResponderBadge(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              Hospital / Ambulance Organization
+            </label>
+            <input
+              type="text"
+              value={responderOrg}
+              onChange={(e) => setResponderOrg(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              Clinical Emergency Reason
+            </label>
+            <textarea
+              rows={2}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
+              required
+            />
+          </div>
+
+          {/* Giant Execute Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-2 py-4 rounded-2xl bg-red-600 hover:bg-red-700 active:scale-98 text-white font-black text-base flex items-center justify-center gap-2 shadow-xl shadow-red-200 transition-all border-2 border-red-700 disabled:opacity-50"
+          >
+            <Stethoscope className="w-5 h-5" />
+            <span>{loading ? 'Transmitting Emergency Broadcast...' : 'CONFIRM & UNLOCK TIER 2 CLINICAL DATA'}</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
