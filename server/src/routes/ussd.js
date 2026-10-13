@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
     if (!vaultId) {
       return res.json({
         response_type: 'SMS_REPLY',
-        message: 'AapatVault SMS Gateway: Invalid request. Text "HELP <VAULT-ID>" (e.g. HELP AV-8842) to get instant emergency lifesaver data, or dial 108 for ambulance.'
+        message: 'Prana SMS Gateway: Invalid request. Text "HELP <VAULT-ID>" (e.g. HELP AV-8842) to get instant emergency lifesaver data, or dial 108 for ambulance.'
       });
     }
 
@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
     if (!vault) {
       return res.json({
         response_type: 'SMS_REPLY',
-        message: `AapatVault: Vault ID "${vaultId}" not found. Please re-check code printed on wallet card or lock screen. Ambulance: Dial 108.`
+        message: `Prana: Vault ID "${vaultId}" not found. Please re-check code printed on wallet card or lock screen. Ambulance: Dial 108.`
       });
     }
 
@@ -51,7 +51,7 @@ router.post('/', async (req, res) => {
     const contactStr = contacts.map(c => `${c.name} (${c.relationship}): ${c.phone}`).join('\n');
 
     const smsMessage = 
-`[AAPAT-VAULT EMERGENCY]
+`[PRANA EMERGENCY]
 PATIENT: ${vault.owner_name}
 BLOOD GROUP: ${vault.blood_group}
 ALLERGIES: ${allergies}

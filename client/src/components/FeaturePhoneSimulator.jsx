@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Smartphone, Send, PhoneCall, Volume2, X, Sparkles } from 'lucide-react';
 
@@ -9,6 +9,18 @@ export function FeaturePhoneSimulator({ isOpen, onClose, defaultVaultId = 'AV-88
   const [mode, setMode] = useState('ussd'); // 'ussd' | 'sms'
   const [screenOutput, setScreenOutput] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // In real keypad mobile: pressing physical key '1' triggers IVR voice readout
+  useEffect(() => {
+    if (!isOpen || !screenOutput) return;
+    const handleKeyDown = (e) => {
+      if (e.key === '1' && e.target.tagName !== 'INPUT') {
+        speakText(screenOutput);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, screenOutput, speakText]);
 
   if (!isOpen) return null;
 
@@ -99,13 +111,18 @@ export function FeaturePhoneSimulator({ isOpen, onClose, defaultVaultId = 'AV-88
           )}
 
           {screenOutput && (
-            <button
-              onClick={() => speakText(screenOutput)}
-              className="mt-2 py-1 px-2 rounded bg-emerald-900 text-emerald-100 text-[10px] font-bold flex items-center justify-center gap-1 self-start"
-            >
-              <Volume2 className="w-3 h-3" />
-              <span>{t('voice_read')}</span>
-            </button>
+            <div className="mt-3 pt-2 border-t border-emerald-900/30 flex items-center justify-between gap-2">
+              <button
+                onClick={() => speakText(screenOutput)}
+                className="py-1 px-2.5 rounded bg-emerald-900 hover:bg-emerald-950 text-emerald-100 text-[10px] font-bold flex items-center gap-1.5 shadow-xs"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                <span>{t('voice_read')}</span>
+              </button>
+              <span className="text-[10px] text-emerald-950 font-bold font-mono bg-emerald-700/20 px-2 py-0.5 rounded">
+                [Press '1' on Keypad]
+              </span>
+            </div>
           )}
         </div>
 
@@ -137,9 +154,14 @@ export function FeaturePhoneSimulator({ isOpen, onClose, defaultVaultId = 'AV-88
           </button>
         </div>
 
-        <p className="text-[10px] text-slate-400 mt-3 text-center">
-          Works on any basic 2G/4G keypad phone (JioBharat, Nokia) with zero data connection.
-        </p>
+        <div className="text-[10px] text-slate-400 mt-3 text-center space-y-1">
+          <p>
+            Works on any basic 2G/4G keypad phone (JioBharat, Nokia) with zero data connection.
+          </p>
+          <p className="text-slate-500 text-[9px]">
+            💡 <em>On a real keypad mobile: Voice is delivered via an automated toll-free IVR phone call by pressing key '1' on the physical keypad.</em>
+          </p>
+        </div>
       </div>
     </div>
   );
