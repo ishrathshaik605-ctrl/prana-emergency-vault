@@ -104,7 +104,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
           onClick={onBack}
           className="mt-4 px-4 py-2 bg-slate-900 text-white font-bold rounded-xl text-xs"
         >
-          ← Return to Home
+          {t('back_to_home')}
         </button>
       </div>
     );
@@ -118,7 +118,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
           onClick={onBack}
           className="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1"
         >
-          ← Back to Vault Selection
+          {t('back_to_selection')}
         </button>
 
         {elevatedData && (
@@ -127,7 +127,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
             className="px-3 py-1.5 rounded-xl bg-red-100 border border-red-300 text-red-700 font-bold text-xs hover:bg-red-200 flex items-center gap-1"
           >
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Lock & Revoke Access</span>
+            <span>{t('lock_and_revoke')}</span>
           </button>
         )}
       </div>
@@ -147,7 +147,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
               </span>
               <h2 className="text-2xl font-black">{elevatedData.owner_name}</h2>
               <p className="text-xs text-slate-100">
-                Blood Group: <strong>{elevatedData.blood_group}</strong> • Age: {elevatedData.age || 'Adult'}
+                {t('blood_group')}: <strong>{elevatedData.blood_group}</strong> • Age: {elevatedData.age || 'Adult'}
               </p>
             </div>
 
@@ -155,7 +155,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
               <div className="bg-black/30 backdrop-blur-md px-4 py-2 rounded-2xl text-center border border-white/20">
                 <div className="text-[10px] uppercase font-black text-red-200 flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>Session Expiration</span>
+                  <span>{t('session_expiration')}</span>
                 </div>
                 <div className="text-2xl font-mono font-black text-white">
                   {formatTimer(breakGlassTimer)}
@@ -170,10 +170,10 @@ export function EmergencyPortal({ vaultId, onBack }) {
             <div>
               <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
                 <HeartPulse className="w-4 h-4 text-red-600" />
-                <span>Current Active Medications & Dosages</span>
+                <span>{t('medications_dosage')}</span>
               </h3>
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-900 leading-relaxed">
-                {elevatedData.medications || 'No daily medications registered'}
+                {elevatedData.medications || t('no_daily_meds')}
               </div>
             </div>
 
@@ -182,7 +182,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
                   <ShieldAlert className="w-4 h-4 text-indigo-600" />
-                  <span>Implants / Pacemaker / Surgical Hardware</span>
+                  <span>{t('implants_hardware')}</span>
                 </h3>
                 <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-sm font-bold text-indigo-950">
                   ⚠️ {elevatedData.implants}
@@ -195,7 +195,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
                   <Hospital className="w-4 h-4 text-emerald-600" />
-                  <span>Cashless Hospitalization & Insurance Coverage</span>
+                  <span>{t('insurance_cashless_title')}</span>
                 </h3>
                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2 text-xs">
                   <div className="flex justify-between font-bold text-sm text-emerald-950">
@@ -222,7 +222,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-blue-600" />
-                  <span>Attached Clinical Reports & Documents</span>
+                  <span>{t('clinical_reports_title')}</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(elevatedData.documents || elevatedData.medical_documents).map((doc) => (
@@ -245,7 +245,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
                         className="p-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 shrink-0 font-bold text-xs flex items-center gap-1"
                       >
                         <Download className="w-4 h-4" />
-                        <span>View</span>
+                        <span>{t('view_doc')}</span>
                       </a>
                     </div>
                   ))}
@@ -257,7 +257,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
             {elevatedData.home_address && (
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2">
-                  Home Residence Address
+                  {t('home_address_title')}
                 </h3>
                 <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800">
                   {elevatedData.home_address}

@@ -12,16 +12,22 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
 
   const handleVoiceCommand = () => {
     startListening((command) => {
-      if (command.includes('ambulance') || command.includes('108') || command.includes('hospital')) {
-        speakText('Calling emergency ambulance 108');
+      const keywords = t('voice_keywords') || {};
+      const lower = command.toLowerCase();
+
+      if (keywords.ambulance?.some(k => lower.includes(k.toLowerCase()))) {
+        speakText(t('voice_calling_ambulance'));
         window.location.href = 'tel:108';
-      } else if (command.includes('family') || command.includes('son') || command.includes('daughter')) {
-        speakText('Opening family contacts');
+      } else if (keywords.family?.some(k => lower.includes(k.toLowerCase()))) {
+        speakText(t('voice_opening_family'));
         onOpenEmergency();
-      } else if (command.includes('emergency') || command.includes('help')) {
+      } else if (keywords.medical?.some(k => lower.includes(k.toLowerCase()))) {
+        speakText(t('voice_showing_medical'));
+        onOpenEmergency();
+      } else if (keywords.help?.some(k => lower.includes(k.toLowerCase()))) {
         onOpenEmergency();
       } else {
-        speakText(`Command recognized: ${command}`);
+        speakText(`${t('voice_command_recognized')}: ${command}`);
       }
     });
   };
@@ -36,7 +42,7 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-none">
-              AapatVault
+              {t('app_name')}
             </h1>
             <span className="text-xs text-slate-500 font-medium">
               {t('tagline')}
@@ -77,7 +83,7 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
             }`}
           >
             <Eye className="w-4 h-4" />
-            <span className="hidden sm:inline">Contrast</span>
+            <span className="hidden sm:inline">{t('contrast_btn')}</span>
           </button>
 
           {/* Voice Speak Navigation */}
@@ -92,7 +98,7 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
             }`}
           >
             <Mic className="w-4 h-4" />
-            <span className="hidden sm:inline">{isListening ? 'Listening...' : 'Voice'}</span>
+            <span className="hidden sm:inline">{isListening ? '...' : t('voice_btn')}</span>
           </button>
 
           {/* Feature Phone Simulator Button */}
@@ -104,7 +110,7 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
               className="p-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-100 text-xs font-semibold flex items-center gap-1"
             >
               <Smartphone className="w-4 h-4" />
-              <span className="hidden md:inline">Feature Phone</span>
+              <span className="hidden md:inline">{t('feature_phone_btn')}</span>
             </button>
           )}
 
@@ -117,7 +123,7 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
               className="p-2 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-300 hover:bg-indigo-100 text-xs font-semibold flex items-center gap-1"
             >
               <Printer className="w-4 h-4" />
-              <span className="hidden md:inline">Print Card</span>
+              <span className="hidden md:inline">{t('print_card_btn')}</span>
             </button>
           )}
 
@@ -128,7 +134,7 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
             className="px-3.5 py-2 rounded-xl bg-red-600 text-white font-extrabold text-sm tracking-wide shadow-md shadow-red-200 hover:bg-red-700 active:scale-95 flex items-center gap-1.5 transition-all"
           >
             <ShieldAlert className="w-5 h-5 animate-bounce" />
-            <span>EMERGENCY MODE</span>
+            <span>{t('emergency_mode_btn')}</span>
           </button>
         </div>
       </div>

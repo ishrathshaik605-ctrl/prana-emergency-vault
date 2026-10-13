@@ -13,7 +13,7 @@ export function PrintableCard({ vault, onClose }) {
       n: vault.owner_name,
       bg: vault.blood_group,
       al: vault.allergies || 'None',
-      url: `https://aapatvault.in/e/${vault.id}`
+      url: `https://prana.in/e/${vault.id}`
     });
 
     QRCode.toDataURL(qrPayload, {
@@ -97,7 +97,7 @@ export function PrintableCard({ vault, onClose }) {
                     </span>
                   </div>
                   <div className="bg-white text-red-600 px-2.5 py-0.5 rounded-lg text-xs font-black shadow-xs">
-                    AAPAT-VAULT
+                    PRANA
                   </div>
                 </div>
 

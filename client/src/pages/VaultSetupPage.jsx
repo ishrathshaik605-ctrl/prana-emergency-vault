@@ -176,10 +176,10 @@ export function VaultSetupPage({ onComplete, onCancel }) {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <span className="text-xs uppercase font-extrabold tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded-full">
-            Under 5 Minutes Setup
+            {t('under_5_min_setup')}
           </span>
           <h2 className="text-2xl font-black text-slate-900 mt-1">
-            {isAssistedSetup ? 'Assisted Setup for Parent / Relative' : t('setup_title')}
+            {isAssistedSetup ? t('assisted_setup_for_parent') : t('setup_title')}
           </h2>
           <p className="text-xs text-slate-500 font-medium">
             Step {step} of 4: {
@@ -198,7 +198,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
             className="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 font-bold text-xs hover:bg-amber-200 flex items-center gap-1"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Pre-fill Elder</span>
+            <span>{t('prefill_elder')}</span>
           </button>
           <button
             type="button"
@@ -206,7 +206,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
             className="px-3 py-1.5 rounded-xl bg-blue-100 text-blue-900 font-bold text-xs hover:bg-blue-200 flex items-center gap-1"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Pre-fill Urban</span>
+            <span>{t('prefill_urban')}</span>
           </button>
         </div>
       </div>
@@ -231,7 +231,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
             <div className="space-y-4 animate-fade-in">
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="text-xs font-bold text-slate-700">
-                  Are you setting this up on behalf of an elderly family member?
+                  {t('assisted_setup_for_parent')}
                 </div>
                 <input
                   type="checkbox"
@@ -243,7 +243,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Full Name of Vault Owner *
+                  {t('full_name_owner')}
                 </label>
                 <input
                   type="text"
@@ -258,7 +258,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Blood Group *
+                    {t('blood_group')} *
                   </label>
                   <select
                     value={formData.blood_group}
@@ -273,7 +273,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Date of Birth
+                    {t('date_of_birth')}
                   </label>
                   <input
                     type="date"
@@ -285,23 +285,23 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Gender
+                    {t('gender')}
                   </label>
                   <select
                     value={formData.gender}
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                     className="w-full px-3 py-3 rounded-2xl border-2 border-slate-300 focus:border-red-600 focus:outline-none font-semibold text-slate-900"
                   >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="Male">{t('male')}</option>
+                    <option value="Female">{t('female')}</option>
+                    <option value="Other">{t('other')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Home Residence Address (Encrypted)
+                  {t('home_address_encrypted')}
                 </label>
                 <input
                   type="text"
@@ -319,7 +319,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
             <div className="space-y-4 animate-fade-in">
               <div>
                 <label className="block text-xs font-bold text-red-700 uppercase mb-1 flex items-center gap-1">
-                  <span>Critical Drug & Food Allergies *</span>
+                  <span>{t('critical_allergies_req')}</span>
                 </label>
                 <input
                   type="text"
@@ -333,7 +333,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Chronic Health Conditions
+                  {t('chronic_conditions')}
                 </label>
                 <input
                   type="text"
@@ -346,7 +346,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Daily Medications & Dosages
+                  {t('medications_dosages_label')}
                 </label>
                 <textarea
                   rows={2}
@@ -360,7 +360,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Implants / Pacemaker (MRI Safety)
+                    {t('implants_mri')}
                   </label>
                   <input
                     type="text"
@@ -373,15 +373,15 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Organ Donor Status
+                    {t('organ_donor')}
                   </label>
                   <select
                     value={formData.organ_donor}
                     onChange={(e) => setFormData({ ...formData, organ_donor: Number(e.target.value) })}
                     className="w-full px-3 py-2.5 rounded-2xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-xs font-bold text-slate-900"
                   >
-                    <option value={1}>Yes, Registered Organ Donor</option>
-                    <option value={0}>No / Undecided</option>
+                    <option value={1}>{t('donor_yes')}</option>
+                    <option value={0}>{t('donor_no')}</option>
                   </select>
                 </div>
               </div>
@@ -389,7 +389,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Primary Doctor & Phone
+                    {t('primary_doc_phone')}
                   </label>
                   <input
                     type="text"
@@ -402,7 +402,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Preferred Emergency Hospital
+                    {t('preferred_emergency_hospital')}
                   </label>
                   <input
                     type="text"
@@ -426,7 +426,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
               {/* Priority 1 Contact */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <span className="text-xs font-black uppercase text-red-600 block">
-                  Priority #1 Emergency Contact (Primary Guardian) *
+                  {t('primary_guardian_contact')}
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <input
@@ -459,7 +459,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
               {/* Priority 2 Contact */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <span className="text-xs font-black uppercase text-slate-600 block">
-                  Priority #2 Emergency Contact (Secondary)
+                  {t('secondary_contact')}
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <input
@@ -493,7 +493,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
             <div className="space-y-4 animate-fade-in">
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
                 <span className="text-xs font-black uppercase text-slate-700 block">
-                  Health Insurance Policy (For Cashless ER Admission)
+                  {t('health_insurance_policy')}
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <input
@@ -522,7 +522,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                  Owner's Emergency Instructions (In Own Words)
+                  {t('owner_instructions_words')}
                 </label>
                 <textarea
                   rows={3}
@@ -534,7 +534,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
               </div>
 
               <div className="p-3 rounded-2xl bg-slate-100 text-[11px] text-slate-600 leading-relaxed">
-                🛡️ <strong>DPDP Act 2023 Consent:</strong> By clicking 'Create Vault', you grant explicit, revokable consent for storing encrypted emergency data under Tier 0 public and Tier 1/2 restricted access. You can export or erase all records at any time.
+                🛡️ {t('dpdp_consent_notice')}
               </div>
             </div>
           )}
@@ -548,7 +548,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
                 className="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back</span>
+                <span>{t('back_btn')}</span>
               </button>
             ) : (
               <button
@@ -556,7 +556,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
                 onClick={onCancel}
                 className="text-xs font-bold text-slate-500 hover:underline"
               >
-                Cancel
+                {t('cancel_btn')}
               </button>
             )}
 
@@ -572,7 +572,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
                 }}
                 className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md"
               >
-                <span>Continue</span>
+                <span>{t('continue_btn')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
@@ -582,7 +582,7 @@ export function VaultSetupPage({ onComplete, onCancel }) {
                 className="px-7 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-red-200 disabled:opacity-50"
               >
                 <Check className="w-5 h-5" />
-                <span>{loading ? 'Configuring Vault...' : t('finish_setup')}</span>
+                <span>{loading ? 'Configuring Vault...' : t('create_vault_btn')}</span>
               </button>
             )}
           </div>

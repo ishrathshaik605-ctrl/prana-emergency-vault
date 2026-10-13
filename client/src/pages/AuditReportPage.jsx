@@ -59,7 +59,7 @@ export function AuditReportPage({ vaultId, onBack }) {
       {/* Header */}
       <div>
         <button onClick={onBack} className="text-xs font-bold text-slate-500 hover:text-slate-900 mb-2 block">
-          ← Back
+          {t('back_btn')}
         </button>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -67,12 +67,12 @@ export function AuditReportPage({ vaultId, onBack }) {
               {t('audit_summary')}
             </h2>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              Immutable forensic log for Vault <strong className="font-mono">{vaultId}</strong>. Track every viewer, timestamp, and location.
+              Forensic log for Vault <strong className="font-mono">{vaultId}</strong>.
             </p>
           </div>
 
           <div className="bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl border border-emerald-200">
-            ✓ Tamper-Evident Ledger Active
+            {t('tamper_ledger_active')}
           </div>
         </div>
       </div>
@@ -80,7 +80,7 @@ export function AuditReportPage({ vaultId, onBack }) {
       {/* Access Logs Timeline */}
       <div className="space-y-4">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-600">
-          Chronological Access Records
+          {t('chronological_records')}
         </h3>
 
         {logs.length === 0 ? (
@@ -173,7 +173,7 @@ export function AuditReportPage({ vaultId, onBack }) {
       {/* Dispatched Emergency Broadcasts (SMS / IVR) */}
       <div className="space-y-3">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-600">
-          Emergency Alerts & Broadcasts Dispatched
+          {t('dispatched_broadcasts')}
         </h3>
 
         <div className="bg-white rounded-3xl border border-slate-200 p-5 divide-y divide-slate-100">

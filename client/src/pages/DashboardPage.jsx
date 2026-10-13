@@ -73,7 +73,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `AapatVault_${vaultId}_Export.json`;
+      a.download = `Prana_${vaultId}_Export.json`;
       a.click();
     } catch (err) {
       alert('Export failed');
@@ -111,11 +111,11 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <button onClick={onBack} className="text-xs font-bold text-slate-500 hover:text-slate-900 mb-2 block">
-            ← Back to Home
+            {t('back_to_home')}
           </button>
-          <h2 className="text-2xl font-black text-slate-900">{vault.owner_name}'s Vault</h2>
+          <h2 className="text-2xl font-black text-slate-900">{vault.owner_name} - {t('app_name')}</h2>
           <span className="text-xs text-slate-500 font-medium">
-            Vault ID: <strong className="font-mono">{vault.id}</strong> • Blood Group: <strong className="text-red-600 font-bold">{vault.blood_group}</strong>
+            Vault ID: <strong className="font-mono">{vault.id}</strong> • {t('blood_group')}: <strong className="text-red-600 font-bold">{vault.blood_group}</strong>
           </span>
         </div>
 
@@ -125,7 +125,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
             className="px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs hover:bg-indigo-100 flex items-center gap-1.5"
           >
             <Printer className="w-4 h-4" />
-            <span>Print Wallet Card</span>
+            <span>{t('print_wallet_card_title')}</span>
           </button>
 
           <button
@@ -133,7 +133,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
             className="px-3.5 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-black flex items-center gap-1.5"
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>Incident Audit Log</span>
+            <span>{t('audit_log')}</span>
           </button>
         </div>
       </div>
@@ -144,16 +144,16 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
         <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-red-600 font-bold text-xs uppercase">
             <HeartPulse className="w-4 h-4" />
-            <span>Medical Highlights</span>
+            <span>{t('medical_highlights')}</span>
           </div>
           <p className="text-xs font-bold text-slate-900">
-            Allergies: <span className="text-amber-700">{vault.allergies || 'None'}</span>
+            {t('critical_allergies')}: <span className="text-amber-700">{vault.allergies || 'None'}</span>
           </p>
           <p className="text-xs text-slate-700">
-            Conditions: <strong>{vault.conditions || 'None'}</strong>
+            {t('conditions')}: <strong>{vault.conditions || 'None'}</strong>
           </p>
           <p className="text-xs text-slate-700">
-            Medications: <strong>{vault.medications || 'None'}</strong>
+            {t('medications')}: <strong>{vault.medications || 'None'}</strong>
           </p>
         </div>
 
@@ -161,7 +161,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
         <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase">
             <ShieldCheck className="w-4 h-4" />
-            <span>Insurance & Hospital</span>
+            <span>{t('insurance_and_hospital')}</span>
           </div>
           <p className="text-xs font-bold text-slate-900">
             Provider: <strong>{vault.insurance?.provider || 'Not linked'}</strong>
@@ -170,7 +170,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
             Policy: {vault.insurance?.policy_number || 'N/A'}
           </p>
           <p className="text-xs text-slate-600">
-            Hospital: {vault.hospital_name || 'Nearest ER'}
+            {t('preferred_hospital')}: {vault.hospital_name || 'Nearest ER'}
           </p>
         </div>
 
@@ -178,10 +178,10 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
         <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2">
           <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase">
             <FileText className="w-4 h-4" />
-            <span>Guardians & Documents</span>
+            <span>{t('guardians_and_docs')}</span>
           </div>
           <p className="text-xs text-slate-700">
-            Emergency Contacts: <strong>{vault.emergency_contacts?.length || 0} registered</strong>
+            {t('emergency_contacts')}: <strong>{vault.emergency_contacts?.length || 0} registered</strong>
           </p>
           <p className="text-xs text-slate-700">
             Attached Documents: <strong>{vault.documents?.length || 0} encrypted files</strong>
@@ -194,10 +194,10 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-base font-black text-slate-900">
-              Family Access Control Matrix (Tier 1)
+              {t('family_matrix_title')}
             </h3>
             <p className="text-xs text-slate-500">
-              Control exactly which categories each verified family member can view during an emergency.
+              {t('family_matrix_desc')}
             </p>
           </div>
           <button
@@ -205,7 +205,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
             className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 flex items-center gap-1"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Add Family Member</span>
+            <span>{t('add_family_member')}</span>
           </button>
         </div>
 
@@ -243,7 +243,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
                 onClick={() => setShowAddMember(false)}
                 className="px-3 py-1.5 text-xs text-slate-500 font-bold hover:underline"
               >
-                Cancel
+                {t('cancel_btn')}
               </button>
               <button
                 type="submit"
@@ -285,10 +285,10 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
       {/* DPDP Act 2023 Compliance Panel */}
       <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 space-y-3">
         <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">
-          Data Governance & Privacy Controls (India DPDP Act 2023)
+          {t('data_governance_title')}
         </h4>
         <p className="text-xs text-slate-600">
-          You retain complete ownership over all clinical and personal emergency data. No advertising, no data brokerage.
+          {t('data_governance_desc')}
         </p>
 
         <div className="flex flex-wrap gap-3 pt-2">
@@ -297,7 +297,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
             className="px-4 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-xs font-bold text-slate-800 flex items-center gap-1.5 shadow-xs"
           >
             <Download className="w-4 h-4 text-emerald-600" />
-            <span>Right to Portability (Export JSON Dump)</span>
+            <span>{t('right_to_portability')}</span>
           </button>
 
           <button
@@ -305,7 +305,7 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
             className="px-4 py-2.5 rounded-xl bg-white border border-red-300 hover:bg-red-50 text-xs font-bold text-red-600 flex items-center gap-1.5 shadow-xs"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Right to Erasure (Permanently Delete All Data)</span>
+            <span>{t('right_to_erasure')}</span>
           </button>
         </div>
       </div>

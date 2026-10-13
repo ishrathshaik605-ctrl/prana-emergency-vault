@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Smartphone, Send, PhoneCall, Volume2, X, Sparkles } from 'lucide-react';
 
 export function FeaturePhoneSimulator({ isOpen, onClose, defaultVaultId = 'AV-8842' }) {
-  const { speakText } = useLanguage();
+  const { t, speakText } = useLanguage();
   const [dialText, setDialText] = useState(`*999*${defaultVaultId}#`);
   const [smsQuery, setSmsQuery] = useState(`HELP ${defaultVaultId}`);
   const [mode, setMode] = useState('ussd'); // 'ussd' | 'sms'
@@ -59,7 +59,7 @@ export function FeaturePhoneSimulator({ isOpen, onClose, defaultVaultId = 'AV-88
         <div className="flex items-center gap-2 mb-3">
           <Smartphone className="w-5 h-5 text-emerald-400" />
           <h3 id="feature-phone-title" className="text-sm font-black uppercase tracking-wider text-slate-200">
-            Rural & Feature Phone Fallback
+            {t('feature_phone_sim')}
           </h3>
         </div>
 
@@ -104,7 +104,7 @@ export function FeaturePhoneSimulator({ isOpen, onClose, defaultVaultId = 'AV-88
               className="mt-2 py-1 px-2 rounded bg-emerald-900 text-emerald-100 text-[10px] font-bold flex items-center justify-center gap-1 self-start"
             >
               <Volume2 className="w-3 h-3" />
-              <span>Voice Read Aloud</span>
+              <span>{t('voice_read')}</span>
             </button>
           )}
         </div>
