@@ -1,4 +1,4 @@
-# AapatVault (Family Emergency Information Vault)
+# Prana (Family Emergency Information Vault)
 
 > **Controlled Access at the Moment of Need.**
 > Production-Quality MVP designed for high-stress emergency response, low-literacy adults, rural feature-phone users, and first responders.
