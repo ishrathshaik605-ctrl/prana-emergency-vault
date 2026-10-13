@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { VoiceProvider } from './context/VoiceContext';
 import { Header } from './components/Header';
 import { EmergencyModeModal } from './components/EmergencyModeModal';
