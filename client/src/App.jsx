@@ -125,8 +125,9 @@ function AppContent() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 no-print">
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>
-            <strong>{t('app_name')}</strong> • {t('controlled_access')}
+          <div className="flex items-center gap-2">
+            <img src="/logo-icon.png" alt="Prana" className="w-5 h-5 rounded-md object-cover bg-black border border-slate-800" />
+            <span><strong>{t('app_name')}</strong> • {t('philosophy')}</span>
           </div>
           <div className="flex gap-4">
             <button onClick={() => setCurrentPage('home')} className="hover:underline">{t('back_to_home') || 'Home'}</button>

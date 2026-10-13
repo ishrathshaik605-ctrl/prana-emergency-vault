@@ -36,20 +36,26 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm transition-colors">
       <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         {/* Brand Logo & Name */}
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.location.href = '/'}>
-          <img 
-            src="/logo.png" 
-            alt="Prana Logo" 
-            className="w-11 h-11 rounded-2xl object-cover bg-black border border-slate-800 shadow-md shadow-slate-200 group-hover:scale-105 transition-transform" 
-          />
+        <div className="flex items-center gap-3 cursor-pointer group select-none" onClick={() => window.location.href = '/'}>
+          <div className="relative">
+            <img 
+              src="/logo-icon.png" 
+              alt="Prana Logo" 
+              className="w-11 h-11 rounded-2xl object-cover bg-black border border-slate-900 shadow-md group-hover:scale-105 transition-all duration-300 ring-2 ring-emerald-500/20" 
+            />
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-xs" title="Operational" />
+          </div>
           <div>
-            <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none flex items-center gap-1">
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 leading-none flex items-center gap-1.5">
               <span>{t('app_name')}</span>
-              <span className="text-emerald-600 text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">VAULT</span>
+              <span className="text-emerald-700 text-[10px] font-black bg-emerald-50 border border-emerald-300/80 px-2 py-0.5 rounded-full tracking-wider uppercase">VAULT</span>
             </h1>
-            <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
-              <span>💚</span> {t('philosophy')}
-            </span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[11px] text-emerald-700 font-semibold tracking-tight">
+                {t('philosophy')}
+              </span>
+            </div>
           </div>
         </div>
 

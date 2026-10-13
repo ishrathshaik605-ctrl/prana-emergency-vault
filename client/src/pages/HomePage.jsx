@@ -26,15 +26,18 @@ export function HomePage({
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-10">
       {/* Hero Section */}
       <div className="text-center space-y-4">
-        <div className="flex flex-col items-center justify-center gap-2 mb-1">
-          <img
-            src="/logo.png"
-            alt="Prana Logo"
-            className="w-24 h-24 rounded-3xl object-cover bg-black border-2 border-slate-800 shadow-xl shadow-slate-300 hover:scale-105 transition-transform"
-          />
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-extrabold tracking-wide shadow-xs">
-            <span className="text-emerald-600">💚</span>
-            <span>{t('philosophy')}</span>
+        <div className="flex flex-col items-center justify-center gap-3 mb-2">
+          <div className="relative group">
+            <div className="absolute -inset-1.5 bg-gradient-to-r from-emerald-500/25 via-teal-500/25 to-blue-500/25 rounded-[32px] blur-md opacity-75 group-hover:opacity-100 transition duration-500"></div>
+            <img
+              src="/logo-icon.png"
+              alt="Prana Logo"
+              className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-[28px] object-cover bg-black border border-slate-800 shadow-2xl group-hover:scale-105 transition-all duration-300 ring-1 ring-white/10"
+            />
+          </div>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200/90 text-emerald-800 text-xs sm:text-sm font-bold tracking-wide shadow-xs">
+            <HeartPulse className="w-4 h-4 text-emerald-600 animate-pulse shrink-0" />
+            <span className="font-semibold">{t('philosophy')}</span>
           </div>
         </div>
 
