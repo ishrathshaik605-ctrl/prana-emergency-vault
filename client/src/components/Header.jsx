@@ -47,8 +47,8 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
               <span>{t('app_name')}</span>
               <span className="text-emerald-600 text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">VAULT</span>
             </h1>
-            <span className="text-xs text-slate-500 font-medium">
-              {t('tagline')}
+            <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1 mt-0.5">
+              <span>💚</span> {t('philosophy')}
             </span>
           </div>
         </div>

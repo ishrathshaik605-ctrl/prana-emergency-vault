@@ -2,6 +2,7 @@ export const translations = {
   en: {
     app_name: 'Prana',
     tagline: 'Family Emergency Information Vault',
+    philosophy: 'Your Health, Our Priority',
     controlled_access: 'CONTROLLED ACCESS AT THE MOMENT OF NEED',
     hero_title_1: 'When seconds matter,',
     hero_title_2: 'your vault speaks for you.',
@@ -144,6 +145,7 @@ export const translations = {
   hi: {
     app_name: 'प्राण (Prana)',
     tagline: 'पारिवारिक आपातकालीन सूचना वॉल्ट',
+    philosophy: 'आपका स्वास्थ्य, हमारी प्राथमिकता',
     controlled_access: 'आवश्यकता के समय नियंत्रित पहुंच',
     hero_title_1: 'जब सेकंड मायने रखते हैं,',
     hero_title_2: 'आपका वॉल्ट आपके लिए बोलता है।',
@@ -284,6 +286,7 @@ export const translations = {
   kn: {
     app_name: 'ಪ್ರಾಣ (Prana)',
     tagline: 'ಕುಟುಂಬದ ತುರ್ತು ಮಾಹಿತಿ ವಾಲ್ಟ್',
+    philosophy: 'ನಿಮ್ಮ ಆರೋಗ್ಯ, ನಮ್ಮ ಆದ್ಯತೆ',
     controlled_access: 'ಅಗತ್ಯವಿದ್ದಾಗ ನಿಯಂತ್ರಿತ ಪ್ರವೇಶ',
     hero_title_1: 'ಕ್ಷಣಗಳು ಮುಖ್ಯವಾದಾಗ,',
     hero_title_2: 'ನಿಮ್ಮ ವಾಲ್ಟ್ ನಿಮಗಾಗಿ ಮಾತನಾಡುತ್ತದೆ.',
@@ -424,6 +427,7 @@ export const translations = {
   ta: {
     app_name: 'பிராணா (Prana)',
     tagline: 'குடும்ப அவசர தகவல் பெட்டகம்',
+    philosophy: 'உங்கள் ஆரோக்கியம், எங்கள் முன்னுரிமை',
     controlled_access: 'தேவைப்படும் நேரத்தில் கட்டுப்படுத்தப்பட்ட அணுகல்',
     hero_title_1: 'நொடிகள் முக்கியமான போது,',
     hero_title_2: 'உங்கள் பெட்டகம் உங்களுக்காக பேசுகிறது.',
@@ -564,6 +568,7 @@ export const translations = {
   te: {
     app_name: 'ప్రాణ (Prana)',
     tagline: 'కుటుంబ అత్యవసర సమాచార వాల్ట్',
+    philosophy: 'మీ ఆరోగ్యం, మా ప్రాధాన్యత',
     controlled_access: 'అవసరమైన సమయంలో నియంత్రిత ప్రాప్యత',
     hero_title_1: 'సెకన్లు కీలకమైనప్పుడు,',
     hero_title_2: 'మీ వాల్ట్ మీ తరపున మాట్లాడుతుంది.',
@@ -704,6 +709,7 @@ export const translations = {
   bn: {
     app_name: 'প্রাণ (Prana)',
     tagline: 'পারিবারিক জরুরি তথ্য ভল্ট',
+    philosophy: 'আপনার স্বাস্থ্য, আমাদের অগ্রাধিকার',
     controlled_access: 'প্রয়োজনের মুহূর্তে নিয়ন্ত্রিত অ্যাক্সেস',
     hero_title_1: 'যখন সেকেন্ড গুরুত্বপূর্ণ,',
     hero_title_2: 'আপনার ভল্ট আপনার জন্য কথা বলে।',
@@ -844,6 +850,7 @@ export const translations = {
   mr: {
     app_name: 'प्राण (Prana)',
     tagline: 'कौटुंबिक आपत्कालीन माहिती व्हॉल्ट',
+    philosophy: 'तुमचे आरोग्य, आमचे प्राधान्य',
     controlled_access: 'गरजेच्या वेळी नियंत्रित ॲक्सेस',
     hero_title_1: 'जेव्हा सेकंद महत्त्वाचे असतात,',
     hero_title_2: 'तुमचा व्हॉल्ट तुमच्यासाठी बोलतो.',

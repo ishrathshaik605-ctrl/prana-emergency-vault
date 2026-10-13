@@ -26,12 +26,16 @@ export function HomePage({
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-10">
       {/* Hero Section */}
       <div className="text-center space-y-4">
-        <div className="flex justify-center mb-1">
+        <div className="flex flex-col items-center justify-center gap-2 mb-1">
           <img
             src="/logo.png"
             alt="Prana Logo"
             className="w-24 h-24 rounded-3xl object-cover bg-black border-2 border-slate-800 shadow-xl shadow-slate-300 hover:scale-105 transition-transform"
           />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-extrabold tracking-wide shadow-xs">
+            <span className="text-emerald-600">💚</span>
+            <span>{t('philosophy')}</span>
+          </div>
         </div>
 
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-black tracking-wide uppercase">
