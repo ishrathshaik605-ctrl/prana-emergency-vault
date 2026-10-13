@@ -36,13 +36,16 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm transition-colors">
       <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         {/* Brand Logo & Name */}
-        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => window.location.href = '/'}>
-          <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-md shadow-red-200">
-            <ShieldAlert className="w-6 h-6 animate-pulse-subtle" />
-          </div>
+        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.location.href = '/'}>
+          <img 
+            src="/logo.png" 
+            alt="Prana Logo" 
+            className="w-11 h-11 rounded-2xl object-cover bg-black border border-slate-800 shadow-md shadow-slate-200 group-hover:scale-105 transition-transform" 
+          />
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-none">
-              {t('app_name')}
+            <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none flex items-center gap-1">
+              <span>{t('app_name')}</span>
+              <span className="text-emerald-600 text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">VAULT</span>
             </h1>
             <span className="text-xs text-slate-500 font-medium">
               {t('tagline')}

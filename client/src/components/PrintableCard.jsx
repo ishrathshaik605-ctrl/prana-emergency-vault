@@ -91,7 +91,7 @@ export function PrintableCard({ vault, onClose }) {
               <div className="w-full aspect-[1.586/1] bg-gradient-to-br from-red-600 to-rose-800 text-white rounded-2xl p-5 shadow-xl border-2 border-red-900 flex flex-col justify-between relative overflow-hidden">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <ShieldAlert className="w-6 h-6 text-white" />
+                    <img src="/logo.png" alt="Prana" className="w-6 h-6 rounded-md object-cover bg-black border border-white/30" />
                     <span className="text-xs uppercase font-black tracking-widest text-red-100">
                       EMERGENCY MEDICAL ID
                     </span>
@@ -156,8 +156,11 @@ export function PrintableCard({ vault, onClose }) {
 
           {activeTab === 'sticker' && (
             <div className="p-6 rounded-3xl bg-amber-400 text-slate-950 border-4 border-black text-center max-w-sm w-full shadow-2xl flex flex-col items-center">
-              <div className="text-xs font-black uppercase tracking-widest bg-black text-yellow-300 px-3 py-1 rounded-full mb-3">
-                HELMET / BIKE EMERGENCY STICKER
+              <div className="flex items-center gap-2 mb-2">
+                <img src="/logo.png" alt="Prana" className="w-8 h-8 rounded-lg object-cover bg-black border border-black shadow-xs" />
+                <span className="text-xs font-black uppercase tracking-widest bg-black text-yellow-300 px-3 py-1 rounded-full">
+                  HELMET / BIKE EMERGENCY STICKER
+                </span>
               </div>
               <h4 className="text-2xl font-black uppercase tracking-tight">{vault.owner_name}</h4>
               <div className="text-lg font-black my-1">
