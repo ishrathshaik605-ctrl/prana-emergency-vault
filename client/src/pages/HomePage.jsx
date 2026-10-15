@@ -11,7 +11,9 @@ export function HomePage({
   onOpenEmergency, 
   onOpenPrintable, 
   onOpenFeaturePhone,
-  onOpenAudit 
+  onOpenAudit,
+  onOpenDashboard,
+  currentVaultId = 'AV-8842'
 }) {
   const { t, speakText, lang } = useLanguage();
   const [manualId, setManualId] = useState('');
@@ -90,6 +92,26 @@ export function HomePage({
             </button>
           </div>
         </form>
+
+        {/* Quick Profile Access Banner inside the card */}
+        {onOpenDashboard && (
+          <div className="pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-slate-600 font-medium">
+                {t('my_vault_title')}: <strong className="font-mono text-slate-900">{currentVaultId}</strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenDashboard(currentVaultId)}
+              className="text-emerald-700 hover:text-emerald-900 font-extrabold flex items-center gap-1 hover:underline"
+            >
+              <span>{t('my_vault_btn')}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Quick Test Personas */}
@@ -171,14 +193,28 @@ export function HomePage({
       </div>
 
       {/* Creation & Actions Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+        <button
+          onClick={() => onOpenDashboard && onOpenDashboard(currentVaultId)}
+          className="p-5 rounded-3xl bg-slate-900 hover:bg-black text-white text-left shadow-lg transition-all group border border-slate-800"
+        >
+          <ShieldCheck className="w-6 h-6 text-emerald-400 mb-2 group-hover:scale-110 transition-transform" />
+          <div className="font-extrabold text-sm flex items-center justify-between">
+            <span>{t('my_vault_title')}</span>
+            <span className="text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded">
+              {currentVaultId}
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">{t('my_vault_desc')}</p>
+        </button>
+
         <button
           onClick={onStartSetup}
-          className="p-5 rounded-3xl bg-slate-900 hover:bg-black text-white text-left shadow-lg transition-all group"
+          className="p-5 rounded-3xl bg-white hover:bg-slate-50 text-slate-900 text-left border border-slate-200 shadow-sm transition-all group"
         >
-          <UserPlus className="w-6 h-6 text-red-400 mb-2 group-hover:scale-110 transition-transform" />
+          <UserPlus className="w-6 h-6 text-red-500 mb-2 group-hover:scale-110 transition-transform" />
           <div className="font-extrabold text-sm">{t('create_new_vault_title')}</div>
-          <p className="text-xs text-slate-400 mt-1">{t('create_new_vault_desc')}</p>
+          <p className="text-xs text-slate-500 mt-1">{t('create_new_vault_desc')}</p>
         </button>
 
         <button

@@ -4,11 +4,11 @@ import { Tier0Card } from '../components/Tier0Card';
 import { FamilyUnlockModal } from '../components/FamilyUnlockModal';
 import { BreakGlassModal } from '../components/BreakGlassModal';
 import { 
-  HeartPulse, ShieldAlert, FileText, Phone, Hospital, 
+  HeartPulse, ShieldAlert, ShieldCheck, FileText, Phone, Hospital, 
   Clock, AlertTriangle, Download, Lock, CheckCircle, Volume2 
 } from 'lucide-react';
 
-export function EmergencyPortal({ vaultId, onBack }) {
+export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
   const { t, speakText, lang } = useLanguage();
   const [tier0Data, setTier0Data] = useState(null);
   const [elevatedData, setElevatedData] = useState(null);
@@ -112,7 +112,7 @@ export function EmergencyPortal({ vaultId, onBack }) {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
-      {/* Back button */}
+      {/* Back button and Dashboard switch */}
       <div className="mb-4 flex items-center justify-between">
         <button
           onClick={onBack}
@@ -121,15 +121,27 @@ export function EmergencyPortal({ vaultId, onBack }) {
           {t('back_to_selection')}
         </button>
 
-        {elevatedData && (
-          <button
-            onClick={handleReportFraud}
-            className="px-3 py-1.5 rounded-xl bg-red-100 border border-red-300 text-red-700 font-bold text-xs hover:bg-red-200 flex items-center gap-1"
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>{t('lock_and_revoke')}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {onOpenDashboard && (
+            <button
+              onClick={() => onOpenDashboard(vaultId)}
+              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs flex items-center gap-1.5 shadow-sm"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{t('my_vault_btn')}</span>
+            </button>
+          )}
+
+          {elevatedData && (
+            <button
+              onClick={handleReportFraud}
+              className="px-3 py-1.5 rounded-xl bg-red-100 border border-red-300 text-red-700 font-bold text-xs hover:bg-red-200 flex items-center gap-1"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>{t('lock_and_revoke')}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* If elevated (Tier 1 or Tier 2) is active, show the unlocked view */}

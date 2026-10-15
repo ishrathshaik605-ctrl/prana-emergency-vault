@@ -43,6 +43,13 @@ function AppContent() {
     setCurrentPage('setup');
   };
 
+  const handleOpenDashboard = (vaultId = null) => {
+    if (vaultId) {
+      setSelectedVaultId(vaultId);
+    }
+    setCurrentPage('dashboard');
+  };
+
   const handleSetupComplete = (newVaultId) => {
     setSelectedVaultId(newVaultId);
     setCurrentPage('dashboard');
@@ -75,6 +82,7 @@ function AppContent() {
         onOpenPrintable={() => handleOpenPrintable()}
         onOpenFeaturePhone={() => setIsFeaturePhoneOpen(true)}
         onOpenAudit={() => setCurrentPage('audit')}
+        onOpenDashboard={handleOpenDashboard}
         currentVaultId={selectedVaultId}
       />
 
@@ -88,6 +96,8 @@ function AppContent() {
             onOpenPrintable={() => handleOpenPrintable()}
             onOpenFeaturePhone={() => setIsFeaturePhoneOpen(true)}
             onOpenAudit={() => setCurrentPage('audit')}
+            onOpenDashboard={handleOpenDashboard}
+            currentVaultId={selectedVaultId}
           />
         )}
 
@@ -95,6 +105,7 @@ function AppContent() {
           <EmergencyPortal
             vaultId={selectedVaultId}
             onBack={() => setCurrentPage('home')}
+            onOpenDashboard={handleOpenDashboard}
           />
         )}
 
