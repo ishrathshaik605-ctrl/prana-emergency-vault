@@ -119,6 +119,12 @@ function AppContent() {
         {currentPage === 'dashboard' && (
           <DashboardPage
             vaultId={selectedVaultId}
+            onSelectVault={(id) => setSelectedVaultId(id)}
+            onOpenEmergency={(id) => {
+              if (id) setSelectedVaultId(id);
+              setCurrentPage('emergency');
+            }}
+            onStartSetup={handleStartSetup}
             onOpenPrintable={handleOpenPrintable}
             onOpenAudit={() => setCurrentPage('audit')}
             onBack={() => setCurrentPage('home')}

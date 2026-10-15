@@ -2,10 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { 
   ShieldCheck, HeartPulse, UserPlus, Trash2, 
-  Download, Printer, FileText, Lock, AlertTriangle, CheckCircle 
+  Download, Printer, FileText, Lock, AlertTriangle, CheckCircle,
+  Users, ArrowRightLeft, PlusCircle, ExternalLink
 } from 'lucide-react';
 
-export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack }) {
+export function DashboardPage({ 
+  vaultId, 
+  onSelectVault, 
+  onOpenEmergency, 
+  onStartSetup, 
+  onOpenPrintable, 
+  onOpenAudit, 
+  onBack 
+}) {
   const { t } = useLanguage();
   const [vault, setVault] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -105,6 +114,34 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
     return <div className="p-12 text-center text-red-500 font-bold">Vault not found</div>;
   }
 
+  const baseMembers = [
+    {
+      id: 'AV-8842',
+      name: 'Ramesh Patel',
+      role: 'Father (Elderly Dependent • Age 68)',
+      blood_group: 'B+ve',
+      critical: 'Penicillin Allergy • Pacemaker',
+    },
+    {
+      id: 'AV-7721',
+      name: 'Priya Sharma',
+      role: 'Daughter / Self (Tech Pro • Age 32)',
+      blood_group: 'O-ve (Universal Donor)',
+      critical: 'Sulfa Drugs • Mild Asthma',
+    }
+  ];
+
+  const householdList = [...baseMembers];
+  if (vault && !baseMembers.some(m => m.id === vault.id)) {
+    householdList.unshift({
+      id: vault.id,
+      name: vault.owner_name,
+      role: 'Self (Household Member)',
+      blood_group: vault.blood_group,
+      critical: vault.allergies || 'No critical allergies',
+    });
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Top Banner */}
@@ -135,6 +172,94 @@ export function DashboardPage({ vaultId, onOpenPrintable, onOpenAudit, onBack })
             <ShieldCheck className="w-4 h-4" />
             <span>{t('audit_log')}</span>
           </button>
+        </div>
+      </div>
+
+      {/* Family Circle Vaults (Household Hub) */}
+      <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 p-6 rounded-3xl text-white shadow-xl space-y-4 border border-indigo-800/40">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-black tracking-tight">{t('family_circle_title')}</h3>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Household Hub
+                </span>
+              </div>
+              <p className="text-xs text-slate-300/80 mt-0.5">{t('family_circle_desc')}</p>
+            </div>
+          </div>
+
+          <button
+            onClick={onStartSetup}
+            className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm shrink-0"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>{t('link_dependent_btn')}</span>
+          </button>
+        </div>
+
+        {/* Family Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          {householdList.map((m) => {
+            const isActive = vault.id === m.id;
+            return (
+              <div
+                key={m.id}
+                className={`p-4 rounded-2xl border transition-all ${
+                  isActive 
+                    ? 'bg-slate-800/95 border-emerald-400/60 ring-2 ring-emerald-500/30 shadow-md' 
+                    : 'bg-slate-800/40 border-slate-700/60 hover:border-slate-600 hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-black text-white">{m.name}</span>
+                      <span className="text-[10px] font-mono bg-slate-900 text-indigo-300 px-2 py-0.5 rounded border border-indigo-900/60">
+                        {m.id}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-400 font-medium block mt-0.5">
+                      {m.role} • Blood: <strong className="text-red-400 font-bold">{m.blood_group}</strong>
+                    </span>
+                  </div>
+
+                  {isActive ? (
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      {t('currently_viewing')}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => onSelectVault && onSelectVault(m.id)}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-all border border-white/10"
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5 text-indigo-300" />
+                      <span>{t('switch_to_vault')}</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-slate-700/50 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="text-slate-300 text-[11px] truncate max-w-[220px]">
+                    ⚠️ <span className="text-amber-300 font-semibold">{m.critical}</span>
+                  </div>
+
+                  <button
+                    onClick={() => onOpenEmergency && onOpenEmergency(m.id)}
+                    className="text-[11px] font-bold text-indigo-300 hover:text-white flex items-center gap-1 underline underline-offset-2"
+                  >
+                    <span>{t('view_emergency_card')}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

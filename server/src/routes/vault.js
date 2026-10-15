@@ -60,7 +60,7 @@ router.post('/create', async (req, res) => {
       c1: emergency_contacts[0] ? `${emergency_contacts[0].name}:${emergency_contacts[0].phone}` : '',
       c2: emergency_contacts[1] ? `${emergency_contacts[1].name}:${emergency_contacts[1].phone}` : '',
       od: organ_donor ? 1 : 0,
-      url: `https://aapatvault.in/e/${vaultId}`
+      url: `https://prana.in/e/${vaultId}`
     });
 
     await dbRun(
