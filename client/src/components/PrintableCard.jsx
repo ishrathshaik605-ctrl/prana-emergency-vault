@@ -8,13 +8,10 @@ export function PrintableCard({ vault, onClose }) {
 
   useEffect(() => {
     if (!vault) return;
-    const qrPayload = vault.offline_qr_payload || JSON.stringify({
-      v: vault.id,
-      n: vault.owner_name,
-      bg: vault.blood_group,
-      al: vault.allergies || 'None',
-      url: `https://prana.in/e/${vault.id}`
-    });
+    const c1 = vault.emergency_contacts && vault.emergency_contacts[0]
+      ? `&c1=${encodeURIComponent(vault.emergency_contacts[0].name + ':' + vault.emergency_contacts[0].phone)}`
+      : '';
+    const qrPayload = `https://prana.in/e/${vault.id}#v=${vault.id}&n=${encodeURIComponent(vault.owner_name)}&bg=${encodeURIComponent(vault.blood_group || '')}&al=${encodeURIComponent(vault.allergies || 'None')}${c1}`;
 
     QRCode.toDataURL(qrPayload, {
       width: 256,

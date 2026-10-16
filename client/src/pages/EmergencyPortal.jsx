@@ -135,10 +135,11 @@ export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
           {elevatedData && (
             <button
               onClick={handleReportFraud}
-              className="px-3 py-1.5 rounded-xl bg-red-100 border border-red-300 text-red-700 font-bold text-xs hover:bg-red-200 flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-xs hover:bg-black flex items-center gap-1.5 shadow-sm"
+              title="Lock and re-encrypt vault immediately"
             >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>{t('lock_and_revoke')}</span>
+              <Lock className="w-3.5 h-3.5 text-yellow-400" />
+              <span>Emergency Completed (Lock Vault)</span>
             </button>
           )}
         </div>
@@ -276,6 +277,19 @@ export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
                 </div>
               </div>
             )}
+            {/* Emergency Completed / Privacy Killswitch Button */}
+            <div className="pt-4 border-t border-slate-200">
+              <button
+                onClick={handleReportFraud}
+                className="w-full min-h-[50px] rounded-2xl bg-slate-900 hover:bg-black active:scale-98 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all"
+              >
+                <Lock className="w-4 h-4 text-emerald-400" />
+                <span>EMERGENCY COMPLETED — LOCK VAULT NOW</span>
+              </button>
+              <p className="text-[11px] text-center text-slate-500 mt-1.5">
+                Revokes active session tokens and returns vault to Tier 0 zero-leak state.
+              </p>
+            </div>
           </div>
         </div>
       ) : (

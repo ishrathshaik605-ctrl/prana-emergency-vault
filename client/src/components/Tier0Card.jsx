@@ -17,6 +17,33 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
 
   return (
     <div className="card bg-white rounded-3xl border-2 border-red-500 shadow-xl overflow-hidden transition-all">
+      {/* 1-Tap Emergency Services Dispatch Bar (Ambulance 108 & Police 112) */}
+      <div className="bg-slate-950 p-3 flex items-center justify-between gap-2.5 border-b border-slate-800">
+        <a
+          href="tel:108"
+          className="flex-1 min-h-[46px] px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 active:scale-98 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all"
+          aria-label="Call Ambulance 108"
+        >
+          <Phone className="w-4 h-4 animate-pulse" />
+          <div className="leading-tight text-left">
+            <span className="block text-[9px] uppercase tracking-wider text-red-200">1-Tap Rescue</span>
+            <span>{t('call_ambulance') || 'Call Ambulance 108'}</span>
+          </div>
+        </a>
+
+        <a
+          href="tel:112"
+          className="flex-1 min-h-[46px] px-3 py-2 rounded-xl bg-slate-800 hover:bg-black active:scale-98 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-700 shadow-md transition-all"
+          aria-label="Call National Emergency 112"
+        >
+          <Phone className="w-4 h-4 text-cyan-400" />
+          <div className="leading-tight text-left">
+            <span className="block text-[9px] uppercase tracking-wider text-slate-400">National ER</span>
+            <span>{t('call_police') || 'Call Police 112'}</span>
+          </div>
+        </a>
+      </div>
+
       {/* Top Card Banner */}
       <div className="bg-gradient-to-r from-red-600 to-rose-700 p-5 text-white flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
