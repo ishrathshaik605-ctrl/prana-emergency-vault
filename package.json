@@ -1,0 +1,12 @@
+{
+  "name": "prana-vault",
+  "version": "1.0.0",
+  "description": "Prana Vault - Life-Critical Family Emergency Information Vault for India",
+  "scripts": {
+    "build": "npm --prefix client install && npm --prefix client run build && npm --prefix server install",
+    "start": "node server/src/index.js"
+  },
+  "keywords": ["emergency", "healthcare", "vault", "india"],
+  "author": "",
+  "license": "ISC"
+}
