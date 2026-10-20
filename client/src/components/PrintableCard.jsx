@@ -6,12 +6,25 @@ export function PrintableCard({ vault, onClose }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [activeTab, setActiveTab] = useState('wallet'); // 'wallet' | 'sticker' | 'wallpaper'
 
+  const getInitialBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        return window.location.origin;
+      }
+      return `http://10.125.177.231:${window.location.port || '3000'}`;
+    }
+    return 'http://10.125.177.231:3000';
+  };
+
+  const [customBaseUrl, setCustomBaseUrl] = useState(getInitialBaseUrl);
+
   useEffect(() => {
     if (!vault) return;
     const c1 = vault.emergency_contacts && vault.emergency_contacts[0]
       ? `&c1=${encodeURIComponent(vault.emergency_contacts[0].name + ':' + vault.emergency_contacts[0].phone)}`
       : '';
-    const qrPayload = `https://prana.in/e/${vault.id}#v=${vault.id}&n=${encodeURIComponent(vault.owner_name)}&bg=${encodeURIComponent(vault.blood_group || '')}&al=${encodeURIComponent(vault.allergies || 'None')}${c1}`;
+    const base = (customBaseUrl || window.location.origin).replace(/\/+$/, '');
+    const qrPayload = `${base}/?v=${vault.id}#v=${vault.id}&n=${encodeURIComponent(vault.owner_name)}&bg=${encodeURIComponent(vault.blood_group || '')}&al=${encodeURIComponent(vault.allergies || 'None')}${c1}`;
 
     QRCode.toDataURL(qrPayload, {
       width: 256,
@@ -23,7 +36,7 @@ export function PrintableCard({ vault, onClose }) {
     })
       .then(url => setQrDataUrl(url))
       .catch(err => console.error('QR generation error:', err));
-  }, [vault]);
+  }, [vault, customBaseUrl]);
 
   if (!vault) return null;
 
@@ -50,6 +63,51 @@ export function PrintableCard({ vault, onClose }) {
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* QR Destination Target Selector */}
+        <div className="bg-white p-3.5 rounded-2xl border border-slate-200 mt-3 no-print text-xs shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <span className="font-extrabold text-slate-800 flex items-center gap-1.5">
+              <span>🎯 QR Code Scans Will Open:</span>
+            </span>
+            <div className="flex gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCustomBaseUrl(`http://10.125.177.231:${window.location.port || '3000'}`)}
+                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
+                  customBaseUrl.includes('10.125.177.231') 
+                    ? 'bg-emerald-600 text-white shadow-xs' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                📱 Mobile Wi-Fi (10.125.177.231)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCustomBaseUrl(window.location.origin)}
+                className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all ${
+                  customBaseUrl === window.location.origin && !customBaseUrl.includes('10.125.177.231')
+                    ? 'bg-blue-600 text-white shadow-xs' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                🌐 Current Origin
+              </button>
+            </div>
+          </div>
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              value={customBaseUrl}
+              onChange={(e) => setCustomBaseUrl(e.target.value)}
+              placeholder="e.g. http://10.125.177.231:3000 or https://your-app.onrender.com"
+              className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 font-mono text-[11px] text-slate-800 focus:outline-none focus:border-red-500 bg-slate-50"
+            />
+          </div>
+          <p className="text-[10px] text-slate-500 mt-1.5">
+            💡 <strong>Why this matters:</strong> Phones cannot reach "localhost". Use the <strong>Mobile Wi-Fi</strong> button so any phone connected to your Wi-Fi can scan the card!
+          </p>
         </div>
 
         {/* Tab Switcher */}

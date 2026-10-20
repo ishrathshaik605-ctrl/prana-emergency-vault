@@ -24,10 +24,26 @@ function AppContent() {
   const [isPrintableOpen, setIsPrintableOpen] = useState(false);
   const [isFeaturePhoneOpen, setIsFeaturePhoneOpen] = useState(false);
 
-  // Check URL params on load (e.g. ?v=AV-8842 or /emergency/AV-8842)
+  // Check URL params, pathname, or hash on load (e.g. ?v=AV-8842, /e/AV-8842, or #v=AV-8842)
   useEffect(() => {
+    // 1. Search Query Parameters (?v=AV-8842 or ?vault=AV-8842)
     const params = new URLSearchParams(window.location.search);
-    const vParam = params.get('v') || params.get('vault');
+    let vParam = params.get('v') || params.get('vault');
+
+    // 2. Direct Pathname (/e/AV-8842 or /emergency/AV-8842)
+    if (!vParam && window.location.pathname) {
+      const pathMatch = window.location.pathname.match(/\/(?:e|emergency|vault)\/([A-Za-z0-9-]+)/i);
+      if (pathMatch) {
+        vParam = pathMatch[1];
+      }
+    }
+
+    // 3. Hash Parameter for Offline Hybrid QR (#v=AV-8842)
+    if (!vParam && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      vParam = hashParams.get('v');
+    }
+
     if (vParam) {
       setSelectedVaultId(vParam.toUpperCase());
       setCurrentPage('emergency');

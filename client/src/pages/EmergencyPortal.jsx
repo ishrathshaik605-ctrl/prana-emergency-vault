@@ -50,6 +50,37 @@ export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
       if (!res.ok) throw new Error(data.error || 'Failed to load emergency card');
       setTier0Data(data);
     } catch (err) {
+      // Offline fallback: Check if offline QR hash data exists
+      if (window.location.hash) {
+        try {
+          const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+          const hId = hashParams.get('v');
+          if (hId && hId.toUpperCase() === vaultId.toUpperCase()) {
+            const c1Str = hashParams.get('c1') || '';
+            const c1Parts = c1Str.split(':');
+            setTier0Data({
+              id: hId,
+              owner_name: hashParams.get('n') || 'Emergency Patient',
+              blood_group: hashParams.get('bg') || 'Unknown',
+              critical_allergies: hashParams.get('al') || 'None recorded',
+              conditions: 'Information available via online sync',
+              medications: 'Available via family/doctor unlock',
+              implants: 'None reported in offline badge',
+              organ_donor: 1,
+              hospital_name: 'Nearest Emergency Care',
+              emergency_contacts: c1Parts[0] ? [{
+                name: c1Parts[0],
+                relationship: 'Primary Guardian',
+                phone: c1Parts[1] || ''
+              }] : []
+            });
+            setLoading(false);
+            return;
+          }
+        } catch (parseErr) {
+          console.warn('Could not parse offline hash payload:', parseErr);
+        }
+      }
       setError(err.message);
     } finally {
       setLoading(false);
