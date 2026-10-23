@@ -249,6 +249,7 @@ function AppContent() {
       />
 
       <PrintableCard
+        isOpen={isPrintableOpen}
         vault={activeVaultData}
         onClose={() => setIsPrintableOpen(false)}
       />
