@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode';
 import { Printer, ShieldAlert, Phone, HeartPulse, X, Download, Smartphone, ArrowLeft } from 'lucide-react';
 
-export function PrintableCard({ isOpen, vault, onClose }) {
+export function PrintableCard({ isOpen, vault, onClose, onBackToVault }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [activeTab, setActiveTab] = useState('wallet'); // 'wallet' | 'sticker' | 'wallpaper'
 
@@ -308,7 +308,13 @@ export function PrintableCard({ isOpen, vault, onClose }) {
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                if (onBackToVault) {
+                  onBackToVault();
+                } else if (onClose) {
+                  onClose();
+                }
+              }}
               className="px-5 py-3 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />

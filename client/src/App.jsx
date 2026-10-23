@@ -252,6 +252,14 @@ function AppContent() {
         isOpen={isPrintableOpen}
         vault={activeVaultData}
         onClose={() => setIsPrintableOpen(false)}
+        onBackToVault={() => {
+          setIsPrintableOpen(false);
+          const vId = activeVaultData?.id || selectedVaultId;
+          if (vId) {
+            setSelectedVaultId(vId);
+          }
+          setCurrentPage('dashboard');
+        }}
       />
 
       <FeaturePhoneSimulator
