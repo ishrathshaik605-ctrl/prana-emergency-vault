@@ -1,16 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { UserCheck, ShieldCheck, KeyRound, X, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { UserCheck, ShieldCheck, KeyRound, X, ArrowRight, AlertCircle, Sparkles, Smartphone } from 'lucide-react';
 
-export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaultPhone = '+919825099991' }) {
+export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaultPhone = '' }) {
   const { t } = useLanguage();
-  const [phone, setPhone] = useState(defaultPhone);
+  const [phone, setPhone] = useState(defaultPhone || '');
   const [otpCode, setOtpCode] = useState('');
   const [step, setStep] = useState('phone'); // 'phone' | 'otp'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [debugOtp, setDebugOtp] = useState('');
   const [recipientName, setRecipientName] = useState('');
+
+  // Sync phone with registered emergency contact when modal opens
+  useEffect(() => {
+    if (defaultPhone) {
+      setPhone(defaultPhone);
+    }
+  }, [defaultPhone, isOpen]);
+
+  // Handle Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && onClose) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   if (!isOpen) return null;
 
@@ -75,12 +91,18 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 modal-backdrop animate-fade-in"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 modal-backdrop animate-fade-in cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="family-unlock-title"
     >
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative">
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative cursor-default"
+      >
         <button
           onClick={onClose}
           aria-label="Close family unlock modal"
@@ -146,18 +168,26 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
               </div>
 
               {debugOtp && (
-                <div className="mb-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
-                  <div className="text-xs text-emerald-800 font-semibold flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-emerald-600" />
-                    <span>Demo OTP Code: <strong className="font-mono text-sm">{debugOtp}</strong></span>
+                <div className="mb-3.5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center gap-1">
+                      <Smartphone className="w-3.5 h-3.5 text-amber-700" />
+                      <span>SMS Gateway Simulator</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setOtpCode(debugOtp)}
+                      className="text-xs font-black text-amber-900 underline px-2.5 py-1 bg-amber-200 hover:bg-amber-300 rounded-lg transition-colors cursor-pointer"
+                    >
+                      Auto-Fill Code
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setOtpCode(debugOtp)}
-                    className="text-xs font-bold text-emerald-700 hover:underline px-2 py-1 bg-white rounded-lg shadow-xs"
-                  >
-                    Auto-Fill
-                  </button>
+                  <div className="text-xs font-semibold text-slate-900">
+                    Verification code generated for <strong className="font-mono text-slate-950">{phone}</strong>: <strong className="font-mono text-base px-2 py-0.5 rounded bg-white border border-amber-300 text-amber-950 shadow-xs">{debugOtp}</strong>
+                  </div>
+                  <p className="text-[10px] text-amber-800 leading-tight">
+                    ℹ️ <em>Sending physical SMS to SIM cards requires a paid telecom gateway (Twilio / Fast2SMS with TRAI DLT registration). For prototype testing, the secure OTP is shown above for instant verification.</em>
+                  </p>
                 </div>
               )}
 

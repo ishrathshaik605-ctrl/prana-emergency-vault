@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { 
   ShieldCheck, HeartPulse, UserPlus, Trash2, 
   Download, Printer, FileText, Lock, AlertTriangle, CheckCircle,
-  Users, ArrowRightLeft, PlusCircle, ExternalLink
+  Users, ArrowRightLeft, PlusCircle, ExternalLink, Edit3, X
 } from 'lucide-react';
 import { 
   getUserVaults, 
@@ -26,10 +26,28 @@ export function DashboardPage({
   const [loading, setLoading] = useState(true);
   const [newMember, setNewMember] = useState({ name: '', phone: '', rel: 'Family Member' });
   const [showAddMember, setShowAddMember] = useState(false);
+  const [showEditInsurance, setShowEditInsurance] = useState(false);
+  const [insuranceForm, setInsuranceForm] = useState({
+    provider: '',
+    policy_number: '',
+    cashless_helpline: '',
+    tpa_name: ''
+  });
 
   useEffect(() => {
     fetchVault();
   }, [vaultId]);
+
+  useEffect(() => {
+    if (vault?.insurance) {
+      setInsuranceForm({
+        provider: vault.insurance.provider || '',
+        policy_number: vault.insurance.policy_number || '',
+        cashless_helpline: vault.insurance.cashless_helpline || '',
+        tpa_name: vault.insurance.tpa_name || ''
+      });
+    }
+  }, [vault]);
 
   const fetchVault = async () => {
     setLoading(true);
@@ -77,6 +95,38 @@ export function DashboardPage({
       }
     } catch (err) {
       alert('Failed to add permission');
+    }
+  };
+
+  const handleSaveInsurance = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/vault/${vaultId}/insurance`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(insuranceForm)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowEditInsurance(false);
+        // Sync with local device storage
+        const currentVaults = getUserVaults();
+        const updated = currentVaults.map(v => {
+          if (v.id && v.id.toUpperCase() === (vaultId || '').toUpperCase()) {
+            return {
+              ...v,
+              insurance: insuranceForm
+            };
+          }
+          return v;
+        });
+        localStorage.setItem('prana_user_vaults', JSON.stringify(updated));
+        fetchVault();
+      } else {
+        alert(data.error || 'Failed to update insurance');
+      }
+    } catch (err) {
+      alert('Error updating insurance details');
     }
   };
 
@@ -331,16 +381,37 @@ export function DashboardPage({
         </div>
 
         {/* Insurance Card */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2">
-          <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase">
-            <ShieldCheck className="w-4 h-4" />
-            <span>{t('insurance_and_hospital')}</span>
+        <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2 relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase">
+              <ShieldCheck className="w-4 h-4" />
+              <span>{t('insurance_and_hospital')}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setInsuranceForm({
+                  provider: vault.insurance?.provider || '',
+                  policy_number: vault.insurance?.policy_number || '',
+                  cashless_helpline: vault.insurance?.cashless_helpline || '',
+                  tpa_name: vault.insurance?.tpa_name || ''
+                });
+                setShowEditInsurance(true);
+              }}
+              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 underline px-2 py-0.5 rounded-lg hover:bg-indigo-50 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Edit3 className="w-3 h-3" />
+              <span>{vault.insurance?.provider ? 'Edit Policy' : '+ Add Policy'}</span>
+            </button>
           </div>
           <p className="text-xs font-bold text-slate-900">
-            Provider: <strong>{vault.insurance?.provider || 'Not linked'}</strong>
+            Provider: <strong className="text-emerald-700">{vault.insurance?.provider || 'Not linked yet'}</strong>
           </p>
           <p className="text-xs text-slate-700 font-mono">
-            Policy: {vault.insurance?.policy_number || 'N/A'}
+            Policy: {vault.insurance?.policy_number || 'None'}
+          </p>
+          <p className="text-xs text-slate-600">
+            Cashless Helpline: {vault.insurance?.cashless_helpline || 'N/A'}
           </p>
           <p className="text-xs text-slate-600">
             {t('preferred_hospital')}: {vault.hospital_name || 'Nearest ER'}
@@ -482,6 +553,94 @@ export function DashboardPage({
           </button>
         </div>
       </div>
+      {/* Edit Insurance Details Modal */}
+      {showEditInsurance && (
+        <div 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowEditInsurance(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 modal-backdrop animate-fade-in cursor-pointer"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative cursor-default"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 mb-4">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                <h3 className="text-lg font-black text-slate-900">Health Insurance Details</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditInsurance(false)}
+                className="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveInsurance} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Insurance Provider
+                </label>
+                <input
+                  type="text"
+                  value={insuranceForm.provider}
+                  onChange={(e) => setInsuranceForm({ ...insuranceForm, provider: e.target.value })}
+                  placeholder="e.g. Star Health / Care Health / HDFC ERGO"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-semibold text-sm text-slate-900 focus:outline-none focus:border-emerald-600"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  Policy Number
+                </label>
+                <input
+                  type="text"
+                  value={insuranceForm.policy_number}
+                  onChange={(e) => setInsuranceForm({ ...insuranceForm, policy_number: e.target.value })}
+                  placeholder="e.g. SH-8899-2231"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-semibold text-sm text-slate-900 focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  TPA / Cashless Emergency Helpline
+                </label>
+                <input
+                  type="text"
+                  value={insuranceForm.cashless_helpline}
+                  onChange={(e) => setInsuranceForm({ ...insuranceForm, cashless_helpline: e.target.value })}
+                  placeholder="e.g. 1800-425-2255"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm text-slate-900 focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setShowEditInsurance(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-200 cursor-pointer"
+                >
+                  Save Insurance Details
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

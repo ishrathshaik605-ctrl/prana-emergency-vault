@@ -250,6 +250,42 @@ router.put('/:id/update', async (req, res) => {
 });
 
 /**
+ * PUT /api/vault/:id/insurance
+ * Add or update insurance policy details
+ */
+router.put('/:id/insurance', async (req, res) => {
+  try {
+    const vaultId = req.params.id;
+    const { provider, policy_number, cashless_helpline, tpa_name } = req.body;
+
+    // Remove old insurance record
+    await dbRun('DELETE FROM insurance_details WHERE vault_id = ?', [vaultId]);
+
+    // Insert new insurance record if provider is supplied
+    if (provider && provider.trim()) {
+      const insId = uuidv4();
+      await dbRun(
+        `INSERT INTO insurance_details (id, vault_id, provider, policy_number_enc, cashless_helpline, tpa_name)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          insId,
+          vaultId,
+          provider.trim(),
+          encryptField(policy_number || ''),
+          cashless_helpline || '',
+          tpa_name || ''
+        ]
+      );
+    }
+
+    return res.json({ success: true, message: 'Insurance details updated successfully' });
+  } catch (err) {
+    console.error('Error updating insurance:', err);
+    return res.status(500).json({ error: 'Failed to update insurance details' });
+  }
+});
+
+/**
  * POST /api/vault/:id/permissions
  * Add or update family access permission
  */

@@ -100,8 +100,26 @@ export function VaultSetupPage({ onComplete, onCancel }) {
     }
   };
 
+  const handleNextStep = () => {
+    if (step === 1 && !formData.owner_name.trim()) {
+      alert('Please enter your full name');
+      return;
+    }
+    if (step === 2 && !formData.allergies.trim()) {
+      alert('Please enter allergies or type "None"');
+      return;
+    }
+    if (step < 4) {
+      setStep(prev => prev + 1);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (step < 4) {
+      handleNextStep();
+      return;
+    }
     setLoading(true);
 
     try {
@@ -252,7 +270,17 @@ export function VaultSetupPage({ onComplete, onCancel }) {
 
       {/* Main Form Container */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl">
-        <form onSubmit={handleSubmit}>
+        <form 
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+              e.preventDefault();
+              if (step < 4) {
+                handleNextStep();
+              }
+            }
+          }}
+        >
           {/* STEP 1: Personal & Blood Group */}
           {step === 1 && (
             <div className="space-y-4 animate-fade-in">
@@ -590,14 +618,8 @@ export function VaultSetupPage({ onComplete, onCancel }) {
             {step < 4 ? (
               <button
                 type="button"
-                onClick={() => {
-                  if (step === 1 && !formData.owner_name) {
-                    alert('Please enter the owner full name');
-                    return;
-                  }
-                  setStep(step + 1);
-                }}
-                className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md"
+                onClick={handleNextStep}
+                className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
               >
                 <span>{t('continue_btn')}</span>
                 <ArrowRight className="w-4 h-4" />

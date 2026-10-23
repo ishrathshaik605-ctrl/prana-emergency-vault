@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode';
-import { Printer, ShieldAlert, Phone, HeartPulse, X, Download, Smartphone } from 'lucide-react';
+import { Printer, ShieldAlert, Phone, HeartPulse, X, Download, Smartphone, ArrowLeft } from 'lucide-react';
 
 export function PrintableCard({ vault, onClose }) {
   const [qrDataUrl, setQrDataUrl] = useState('');
@@ -17,6 +17,17 @@ export function PrintableCard({ vault, onClose }) {
   };
 
   const [customBaseUrl, setCustomBaseUrl] = useState(getInitialBaseUrl);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && onClose) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   useEffect(() => {
     if (!vault) return;
@@ -42,12 +53,20 @@ export function PrintableCard({ vault, onClose }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 modal-backdrop overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) {
+          onClose();
+        }
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 modal-backdrop overflow-y-auto cursor-pointer"
       role="dialog"
       aria-modal="true"
       aria-labelledby="printable-card-title"
     >
-      <div className="bg-slate-100 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative my-8 border border-slate-300">
+      <div 
+        onClick={(e) => e.stopPropagation()}
+        className="bg-slate-100 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative my-8 border border-slate-300 cursor-default"
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-300 no-print">
           <div className="flex items-center gap-2">
@@ -57,11 +76,13 @@ export function PrintableCard({ vault, onClose }) {
             </h3>
           </div>
           <button
+            type="button"
             onClick={onClose}
             aria-label="Close printable modal"
-            className="p-2 rounded-full bg-white text-slate-500 hover:bg-slate-200"
+            className="px-3.5 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
+            <span>Close ✕</span>
           </button>
         </div>
 
@@ -265,14 +286,23 @@ export function PrintableCard({ vault, onClose }) {
         </div>
 
         {/* Action Controls */}
-        <div className="mt-5 flex items-center justify-between no-print">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 no-print pt-3 border-t border-slate-200">
           <p className="text-xs text-slate-500 font-medium">
             Standard high-contrast QR encoded with offline critical medical details.
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-3 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-900 font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to My Vault</span>
+            </button>
+            <button
+              type="button"
               onClick={() => window.print()}
-              className="px-5 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-red-200"
+              className="px-5 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-red-200 cursor-pointer active:scale-95"
             >
               <Printer className="w-4 h-4" />
               <span>Print / Save as PDF</span>

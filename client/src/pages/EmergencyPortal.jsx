@@ -414,6 +414,7 @@ export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
         isOpen={showFamilyModal}
         onClose={() => setShowFamilyModal(false)}
         vaultId={vaultId}
+        defaultPhone={tier0Data?.emergency_contacts?.[0]?.phone || ''}
         onUnlocked={(data) => setElevatedData(data)}
       />
 
