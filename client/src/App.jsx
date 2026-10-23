@@ -6,6 +6,13 @@ import { EmergencyModeModal } from './components/EmergencyModeModal';
 import { PrintableCard } from './components/PrintableCard';
 import { FeaturePhoneSimulator } from './components/FeaturePhoneSimulator';
 import { LiveAlertToast } from './components/LiveAlertToast';
+import { 
+  getStoredVaultId, 
+  setStoredVaultId, 
+  getUserVaults, 
+  getActiveUserVault, 
+  detectAndSaveDeviceIp 
+} from './utils/vaultStorage';
 
 import { HomePage } from './pages/HomePage';
 import { EmergencyPortal } from './pages/EmergencyPortal';
@@ -16,16 +23,19 @@ import { AuditReportPage } from './pages/AuditReportPage';
 function AppContent() {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'emergency' | 'setup' | 'dashboard' | 'audit'
-  const [selectedVaultId, setSelectedVaultId] = useState('AV-8842');
-  const [activeVaultData, setActiveVaultData] = useState(null);
+  const [selectedVaultId, setSelectedVaultId] = useState(() => getStoredVaultId() || 'AV-8842');
+  const [activeVaultData, setActiveVaultData] = useState(() => getActiveUserVault());
 
   // Modal visibility states
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isPrintableOpen, setIsPrintableOpen] = useState(false);
   const [isFeaturePhoneOpen, setIsFeaturePhoneOpen] = useState(false);
 
-  // Check URL params, pathname, or hash on load (e.g. ?v=AV-8842, /e/AV-8842, or #v=AV-8842)
+  // Check URL params, pathname, hash, or device storage on load
   useEffect(() => {
+    // Detect & save device IP in the background
+    detectAndSaveDeviceIp();
+
     // 1. Search Query Parameters (?v=AV-8842 or ?vault=AV-8842)
     const params = new URLSearchParams(window.location.search);
     let vParam = params.get('v') || params.get('vault');
@@ -47,11 +57,29 @@ function AppContent() {
     if (vParam) {
       setSelectedVaultId(vParam.toUpperCase());
       setCurrentPage('emergency');
+    } else {
+      const storedId = getStoredVaultId();
+      if (storedId) {
+        setSelectedVaultId(storedId);
+        const storedVault = getActiveUserVault();
+        if (storedVault) {
+          setActiveVaultData(storedVault);
+        }
+      }
     }
   }, []);
 
   const handleSelectVault = (id) => {
-    setSelectedVaultId(id);
+    const cleanId = id.toUpperCase();
+    setSelectedVaultId(cleanId);
+    setStoredVaultId(cleanId);
+    
+    // Check if this vault is in local storage
+    const vaults = getUserVaults();
+    const match = vaults.find(v => v.id && v.id.toUpperCase() === cleanId);
+    if (match) {
+      setActiveVaultData(match);
+    }
     setCurrentPage('emergency');
   };
 
@@ -60,33 +88,72 @@ function AppContent() {
   };
 
   const handleOpenDashboard = (vaultId = null) => {
-    if (vaultId) {
-      setSelectedVaultId(vaultId);
+    const idToUse = vaultId || selectedVaultId;
+    if (idToUse) {
+      const cleanId = idToUse.toUpperCase();
+      setSelectedVaultId(cleanId);
+      setStoredVaultId(cleanId);
+      const match = getUserVaults().find(v => v.id && v.id.toUpperCase() === cleanId);
+      if (match) setActiveVaultData(match);
     }
     setCurrentPage('dashboard');
   };
 
-  const handleSetupComplete = (newVaultId) => {
-    setSelectedVaultId(newVaultId);
+  const handleSetupComplete = (newVaultId, createdVault = null) => {
+    const vId = (newVaultId || (createdVault && createdVault.id)).toUpperCase();
+    setSelectedVaultId(vId);
+    setStoredVaultId(vId);
+
+    let fullVault = createdVault;
+    if (!fullVault) {
+      const vaults = getUserVaults();
+      fullVault = vaults.find(v => v.id && v.id.toUpperCase() === vId);
+    }
+
+    if (fullVault) {
+      setActiveVaultData(fullVault);
+    }
+
+    // Immediately trigger printable QR badge modal with the new user's personal details
+    setIsPrintableOpen(true);
     setCurrentPage('dashboard');
   };
 
   const handleOpenPrintable = (vault = null) => {
     if (vault) {
       setActiveVaultData(vault);
-    } else {
-      // Default to Ramesh Patel
-      setActiveVaultData({
-        id: selectedVaultId || 'AV-8842',
-        owner_name: selectedVaultId === 'AV-7721' ? 'Priya Sharma' : 'Ramesh Patel',
-        blood_group: selectedVaultId === 'AV-7721' ? 'O-ve' : 'B+ve',
-        allergies: selectedVaultId === 'AV-7721' ? 'Sulfa Drugs' : 'Severe Penicillin Allergy',
-        emergency_contacts: [
-          { name: 'Suresh Patel', relationship: 'Son', phone: '+919825099991' },
-          { name: 'Geeta Patel', relationship: 'Daughter', phone: '+919825099992' }
-        ]
-      });
+      setIsPrintableOpen(true);
+      return;
     }
+
+    // 1. Check if currently selected vault exists in user's device storage
+    const userVaults = getUserVaults();
+    const match = userVaults.find(v => v.id && v.id.toUpperCase() === selectedVaultId.toUpperCase());
+    if (match) {
+      setActiveVaultData(match);
+      setIsPrintableOpen(true);
+      return;
+    }
+
+    // 2. Check active user vault
+    const activeUser = getActiveUserVault();
+    if (activeUser) {
+      setActiveVaultData(activeUser);
+      setIsPrintableOpen(true);
+      return;
+    }
+
+    // 3. Fall back to demo persona only if no user vaults exist on this device
+    setActiveVaultData({
+      id: selectedVaultId || 'AV-8842',
+      owner_name: selectedVaultId === 'AV-7721' ? 'Priya Sharma' : 'Ramesh Patel',
+      blood_group: selectedVaultId === 'AV-7721' ? 'O-ve' : 'B+ve',
+      allergies: selectedVaultId === 'AV-7721' ? 'Sulfa Drugs' : 'Severe Penicillin Allergy',
+      emergency_contacts: [
+        { name: 'Suresh Patel', relationship: 'Son', phone: '+919825099991' },
+        { name: 'Geeta Patel', relationship: 'Daughter', phone: '+919825099992' }
+      ]
+    });
     setIsPrintableOpen(true);
   };
 

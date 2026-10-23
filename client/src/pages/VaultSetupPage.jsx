@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { saveUserVault } from '../utils/vaultStorage';
 import { 
   ShieldCheck, HeartPulse, Phone, Hospital, 
   ArrowRight, ArrowLeft, Check, Sparkles, User, FileText, Volume2 
@@ -161,8 +162,34 @@ export function VaultSetupPage({ onComplete, onCancel }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to create vault');
 
+      const createdVault = {
+        id: data.vaultId,
+        owner_name: formData.owner_name,
+        dob: formData.dob,
+        gender: formData.gender,
+        blood_group: formData.blood_group,
+        allergies: formData.allergies,
+        conditions: formData.conditions,
+        medications: formData.medications,
+        implants: formData.implants,
+        organ_donor: formData.organ_donor,
+        primary_doctor: formData.primary_doctor,
+        doctor_phone: formData.doctor_phone,
+        hospital_name: formData.hospital_name,
+        hospital_address: formData.hospital_address,
+        home_address: formData.home_address,
+        emergency_instructions: formData.emergency_instructions,
+        emergency_contacts: contacts,
+        insurance: payload.insurance,
+        offline_qr_payload: data.offline_qr_payload || null,
+        created_at: new Date().toISOString()
+      };
+
+      // Persist to device storage immediately
+      saveUserVault(createdVault);
+
       speakText(`Vault ${data.vaultId} configured successfully.`);
-      onComplete(data.vaultId);
+      onComplete(data.vaultId, createdVault);
     } catch (err) {
       alert('Error creating vault: ' + err.message);
     } finally {

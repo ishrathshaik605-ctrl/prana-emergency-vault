@@ -5,6 +5,12 @@ import {
   Download, Printer, FileText, Lock, AlertTriangle, CheckCircle,
   Users, ArrowRightLeft, PlusCircle, ExternalLink
 } from 'lucide-react';
+import { 
+  getUserVaults, 
+  hasUserCreatedVaults, 
+  getStoredDeviceIp, 
+  setStoredVaultId 
+} from '../utils/vaultStorage';
 
 export function DashboardPage({ 
   vaultId, 
@@ -29,15 +35,25 @@ export function DashboardPage({
     setLoading(true);
     try {
       const res = await fetch(`/api/vault/${vaultId}`);
-      const data = await res.json();
-      if (data.success) {
-        setVault(data.vault);
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.success && data.vault) {
+          setVault(data.vault);
+          setLoading(false);
+          return;
+        }
       }
     } catch (err) {
-      console.error('Error fetching vault:', err);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching vault from backend:', err);
     }
+
+    // Local device fallback if server is cold starting or waking up
+    const local = getUserVaults().find(v => v.id && v.id.toUpperCase() === (vaultId || '').toUpperCase());
+    if (local) {
+      setVault(local);
+    }
+    setLoading(false);
   };
 
   const handleAddPermission = async (e) => {
@@ -114,6 +130,9 @@ export function DashboardPage({
     return <div className="p-12 text-center text-red-500 font-bold">Vault not found</div>;
   }
 
+  const userVaults = getUserVaults();
+  const hasUserVaults = userVaults && userVaults.length > 0;
+
   const baseMembers = [
     {
       id: 'AV-8842',
@@ -131,15 +150,38 @@ export function DashboardPage({
     }
   ];
 
-  const householdList = [...baseMembers];
-  if (vault && !baseMembers.some(m => m.id === vault.id)) {
-    householdList.unshift({
-      id: vault.id,
-      name: vault.owner_name,
-      role: 'Self (Household Member)',
-      blood_group: vault.blood_group,
-      critical: vault.allergies || 'No critical allergies',
-    });
+  let householdList = [];
+  if (hasUserVaults) {
+    // When user has created vaults on their device, HIDE Ramesh Patel and Priya Sharma completely!
+    householdList = userVaults.map(uv => ({
+      id: uv.id,
+      name: uv.owner_name,
+      role: uv.id === vault.id ? 'Active Profile (You)' : 'Family Dependent',
+      blood_group: uv.blood_group,
+      critical: uv.allergies || 'No critical allergies',
+    }));
+
+    if (vault && !householdList.some(m => m.id === vault.id)) {
+      householdList.unshift({
+        id: vault.id,
+        name: vault.owner_name,
+        role: 'Active Profile',
+        blood_group: vault.blood_group,
+        critical: vault.allergies || 'No critical allergies',
+      });
+    }
+  } else {
+    // Show sample personas only for first-time testers before any custom vault is created
+    householdList = [...baseMembers];
+    if (vault && !baseMembers.some(m => m.id === vault.id)) {
+      householdList.unshift({
+        id: vault.id,
+        name: vault.owner_name,
+        role: 'Self (Household Member)',
+        blood_group: vault.blood_group,
+        critical: vault.allergies || 'No critical allergies',
+      });
+    }
   }
 
   return (
@@ -151,9 +193,15 @@ export function DashboardPage({
             {t('back_to_home')}
           </button>
           <h2 className="text-2xl font-black text-slate-900">{vault.owner_name} - {t('app_name')}</h2>
-          <span className="text-xs text-slate-500 font-medium">
-            Vault ID: <strong className="font-mono">{vault.id}</strong> • {t('blood_group')}: <strong className="text-red-600 font-bold">{vault.blood_group}</strong>
-          </span>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <span className="text-xs text-slate-500 font-medium">
+              Vault ID: <strong className="font-mono text-slate-900">{vault.id}</strong> • {t('blood_group')}: <strong className="text-red-600 font-bold">{vault.blood_group}</strong>
+            </span>
+            <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>📱 Recognized Device • IP: {getStoredDeviceIp()}</span>
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
