@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { 
   ShieldAlert, HeartPulse, UserPlus, Search, 
   Smartphone, Printer, Sparkles, Stethoscope, ArrowRight, ShieldCheck,
-  CheckCircle2, Laptop, UserCheck
+  CheckCircle2, Laptop, UserCheck, Edit3
 } from 'lucide-react';
 import { 
   hasUserCreatedVaults, 
@@ -162,21 +162,30 @@ export function HomePage({
             </div>
           </div>
 
-          {/* 4 Action Buttons for User's Vault */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+          {/* Action Buttons for User's Vault */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2">
             <button
               type="button"
               onClick={() => onOpenPrintable(activeVault)}
-              className="p-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs shadow-lg shadow-red-900/30 flex items-center justify-center gap-2 transition-transform active:scale-95"
+              className="p-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs shadow-lg shadow-red-900/30 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>Print My QR Scanner Badge</span>
+              <span>Print QR Badge</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onOpenDashboard(activeVault.id, { autoEdit: true })}
+              className="p-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-950 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Edit Whole Vault</span>
             </button>
 
             <button
               type="button"
               onClick={() => onSelectVault(activeVault.id)}
-              className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center justify-center gap-2 transition-transform active:scale-95"
+              className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <HeartPulse className="w-4 h-4 text-red-400" />
               <span>Test Tier-0 Unlock</span>
@@ -185,19 +194,19 @@ export function HomePage({
             <button
               type="button"
               onClick={() => onOpenDashboard(activeVault.id)}
-              className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center justify-center gap-2 transition-transform active:scale-95"
+              className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Open Household Hub</span>
+              <span>Household Hub</span>
             </button>
 
             <button
               type="button"
               onClick={onStartSetup}
-              className="p-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-950 flex items-center justify-center gap-2 transition-transform active:scale-95"
+              className="p-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md shadow-indigo-950 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>+ Add Family Member</span>
+              <span>+ Add Family</span>
             </button>
           </div>
 

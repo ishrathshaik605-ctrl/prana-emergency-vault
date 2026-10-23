@@ -206,8 +206,23 @@ router.put('/:id/update', async (req, res) => {
       owner_name, dob, gender, blood_group, allergies, conditions, medications,
       implants, organ_donor, primary_doctor, doctor_phone, hospital_name,
       hospital_address, home_address, emergency_instructions,
-      emergency_contacts
+      emergency_contacts, insurance
     } = req.body;
+
+    let offlineQrData = null;
+    if (owner_name || blood_group || allergies || conditions || emergency_contacts) {
+      offlineQrData = JSON.stringify({
+        v: vaultId,
+        n: owner_name || '',
+        b: blood_group || '',
+        a: allergies ? allergies.substring(0, 40) : '',
+        c: conditions ? conditions.substring(0, 40) : '',
+        c1: emergency_contacts && emergency_contacts[0] ? `${emergency_contacts[0].name}:${emergency_contacts[0].phone}` : '',
+        c2: emergency_contacts && emergency_contacts[1] ? `${emergency_contacts[1].name}:${emergency_contacts[1].phone}` : '',
+        od: organ_donor ? 1 : 0,
+        url: `/?v=${vaultId}`
+      });
+    }
 
     await dbRun(
       `UPDATE vaults SET
@@ -226,6 +241,7 @@ router.put('/:id/update', async (req, res) => {
         hospital_address = COALESCE(?, hospital_address),
         home_address_enc = COALESCE(?, home_address_enc),
         emergency_instructions_enc = COALESCE(?, emergency_instructions_enc),
+        offline_qr_payload = COALESCE(?, offline_qr_payload),
         updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [
@@ -240,6 +256,7 @@ router.put('/:id/update', async (req, res) => {
         hospital_name, hospital_address,
         home_address !== undefined ? encryptField(home_address) : null,
         emergency_instructions !== undefined ? encryptField(emergency_instructions) : null,
+        offlineQrData,
         vaultId
       ]
     );
@@ -275,7 +292,26 @@ router.put('/:id/update', async (req, res) => {
       }
     }
 
-    return res.json({ success: true, message: 'Vault details and emergency contacts updated successfully' });
+    // If insurance provided, update insurance_details table
+    if (insurance && typeof insurance === 'object') {
+      await dbRun('DELETE FROM insurance_details WHERE vault_id = ?', [vaultId]);
+      if (insurance.provider && insurance.provider.trim()) {
+        await dbRun(
+          `INSERT INTO insurance_details (id, vault_id, provider, policy_number_enc, cashless_helpline, tpa_name)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            uuidv4(),
+            vaultId,
+            insurance.provider.trim(),
+            encryptField(insurance.policy_number || ''),
+            insurance.cashless_helpline || '',
+            insurance.tpa_name || ''
+          ]
+        );
+      }
+    }
+
+    return res.json({ success: true, message: 'Vault details, contacts, and insurance updated successfully' });
   } catch (err) {
     console.error('Error updating vault:', err);
     return res.status(500).json({ error: 'Failed to update vault' });

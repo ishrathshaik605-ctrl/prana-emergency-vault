@@ -30,6 +30,7 @@ function AppContent() {
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isPrintableOpen, setIsPrintableOpen] = useState(false);
   const [isFeaturePhoneOpen, setIsFeaturePhoneOpen] = useState(false);
+  const [autoOpenEdit, setAutoOpenEdit] = useState(false);
 
   // Check URL params, pathname, hash, or device storage on load
   useEffect(() => {
@@ -87,7 +88,7 @@ function AppContent() {
     setCurrentPage('setup');
   };
 
-  const handleOpenDashboard = (vaultId = null) => {
+  const handleOpenDashboard = (vaultId = null, options = {}) => {
     const idToUse = vaultId || selectedVaultId;
     if (idToUse) {
       const cleanId = idToUse.toUpperCase();
@@ -95,6 +96,9 @@ function AppContent() {
       setStoredVaultId(cleanId);
       const match = getUserVaults().find(v => v.id && v.id.toUpperCase() === cleanId);
       if (match) setActiveVaultData(match);
+    }
+    if (options && options.autoEdit) {
+      setAutoOpenEdit(true);
     }
     setCurrentPage('dashboard');
   };
@@ -120,14 +124,15 @@ function AppContent() {
   };
 
   const handleOpenPrintable = (vault = null) => {
-    if (vault) {
-      setActiveVaultData(vault);
+    const userVaults = getUserVaults();
+    if (vault && vault.id) {
+      const fresh = userVaults.find(v => v.id && v.id.toUpperCase() === vault.id.toUpperCase()) || vault;
+      setActiveVaultData(fresh);
       setIsPrintableOpen(true);
       return;
     }
 
     // 1. Check if currently selected vault exists in user's device storage
-    const userVaults = getUserVaults();
     const match = userVaults.find(v => v.id && v.id.toUpperCase() === selectedVaultId.toUpperCase());
     if (match) {
       setActiveVaultData(match);
@@ -137,6 +142,11 @@ function AppContent() {
 
     // 2. Check active user vault
     const activeUser = getActiveUserVault();
+    if (activeUser) {
+      setActiveVaultData(activeUser);
+      setIsPrintableOpen(true);
+      return;
+    }
     if (activeUser) {
       setActiveVaultData(activeUser);
       setIsPrintableOpen(true);
@@ -211,6 +221,8 @@ function AppContent() {
             onOpenPrintable={handleOpenPrintable}
             onOpenAudit={() => setCurrentPage('audit')}
             onBack={() => setCurrentPage('home')}
+            autoOpenEdit={autoOpenEdit}
+            onClearAutoEdit={() => setAutoOpenEdit(false)}
           />
         )}
 
