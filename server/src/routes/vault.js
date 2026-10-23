@@ -205,7 +205,8 @@ router.put('/:id/update', async (req, res) => {
     const {
       owner_name, dob, gender, blood_group, allergies, conditions, medications,
       implants, organ_donor, primary_doctor, doctor_phone, hospital_name,
-      hospital_address, home_address, emergency_instructions
+      hospital_address, home_address, emergency_instructions,
+      emergency_contacts
     } = req.body;
 
     await dbRun(
@@ -243,8 +244,40 @@ router.put('/:id/update', async (req, res) => {
       ]
     );
 
-    return res.json({ success: true, message: 'Vault details updated successfully' });
+    // If emergency_contacts provided, update emergency_contacts table
+    if (Array.isArray(emergency_contacts)) {
+      await dbRun('DELETE FROM emergency_contacts WHERE vault_id = ?', [vaultId]);
+      for (let i = 0; i < emergency_contacts.length; i++) {
+        const c = emergency_contacts[i];
+        if (c.name && c.phone) {
+          await dbRun(
+            `INSERT INTO emergency_contacts (id, vault_id, name, relationship, phone, priority, notify_on_access, can_authorize_tier1)
+             VALUES (?, ?, ?, ?, ?, ?, 1, 1)`,
+            [uuidv4(), vaultId, c.name.trim(), c.relationship || 'Guardian', c.phone.trim(), i + 1]
+          );
+        }
+      }
+
+      // Also update primary guardian access permissions for family unlock OTP
+      await dbRun('DELETE FROM access_permissions WHERE vault_id = ? AND role = "primary_guardian"', [vaultId]);
+      for (const c of emergency_contacts) {
+        if (c.name && c.phone) {
+          const cleanPhone = c.phone.replace(/[^0-9+]/g, '');
+          await dbRun(
+            `INSERT INTO access_permissions (id, vault_id, grantee_phone, grantee_name, relationship, role, allowed_categories, requires_approval)
+             VALUES (?, ?, ?, ?, ?, 'primary_guardian', ?, 0)`,
+            [
+              uuidv4(), vaultId, cleanPhone, c.name.trim(), c.relationship || 'Guardian',
+              JSON.stringify(['medical_basics', 'medications', 'doctor_contacts', 'insurance', 'documents', 'home_address', 'emergency_instructions', 'incident_history'])
+            ]
+          );
+        }
+      }
+    }
+
+    return res.json({ success: true, message: 'Vault details and emergency contacts updated successfully' });
   } catch (err) {
+    console.error('Error updating vault:', err);
     return res.status(500).json({ error: 'Failed to update vault' });
   }
 });

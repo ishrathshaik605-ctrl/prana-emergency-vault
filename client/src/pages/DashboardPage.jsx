@@ -33,18 +33,47 @@ export function DashboardPage({
     cashless_helpline: '',
     tpa_name: ''
   });
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    owner_name: '',
+    blood_group: 'O+ve',
+    allergies: '',
+    conditions: '',
+    hospital_name: '',
+    contact1_name: '',
+    contact1_rel: 'Father',
+    contact1_phone: '',
+    contact2_name: '',
+    contact2_rel: 'Mother',
+    contact2_phone: ''
+  });
 
   useEffect(() => {
     fetchVault();
   }, [vaultId]);
 
   useEffect(() => {
-    if (vault?.insurance) {
-      setInsuranceForm({
-        provider: vault.insurance.provider || '',
-        policy_number: vault.insurance.policy_number || '',
-        cashless_helpline: vault.insurance.cashless_helpline || '',
-        tpa_name: vault.insurance.tpa_name || ''
+    if (vault) {
+      if (vault.insurance) {
+        setInsuranceForm({
+          provider: vault.insurance.provider || '',
+          policy_number: vault.insurance.policy_number || '',
+          cashless_helpline: vault.insurance.cashless_helpline || '',
+          tpa_name: vault.insurance.tpa_name || ''
+        });
+      }
+      setProfileForm({
+        owner_name: vault.owner_name || '',
+        blood_group: vault.blood_group || 'O+ve',
+        allergies: vault.allergies || '',
+        conditions: vault.conditions || '',
+        hospital_name: vault.hospital_name || '',
+        contact1_name: vault.emergency_contacts?.[0]?.name || '',
+        contact1_rel: vault.emergency_contacts?.[0]?.relationship || 'Father',
+        contact1_phone: vault.emergency_contacts?.[0]?.phone || '',
+        contact2_name: vault.emergency_contacts?.[1]?.name || '',
+        contact2_rel: vault.emergency_contacts?.[1]?.relationship || 'Mother',
+        contact2_phone: vault.emergency_contacts?.[1]?.phone || ''
       });
     }
   }, [vault]);
@@ -127,6 +156,76 @@ export function DashboardPage({
       }
     } catch (err) {
       alert('Error updating insurance details');
+    }
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!profileForm.owner_name.trim()) {
+      alert('Full name is required');
+      return;
+    }
+
+    const contacts = [];
+    if (profileForm.contact1_name.trim() && profileForm.contact1_phone.trim()) {
+      contacts.push({
+        name: profileForm.contact1_name.trim(),
+        relationship: profileForm.contact1_rel.trim() || 'Guardian',
+        phone: profileForm.contact1_phone.trim(),
+        priority: 1
+      });
+    }
+    if (profileForm.contact2_name.trim() && profileForm.contact2_phone.trim()) {
+      contacts.push({
+        name: profileForm.contact2_name.trim(),
+        relationship: profileForm.contact2_rel.trim() || 'Guardian',
+        phone: profileForm.contact2_phone.trim(),
+        priority: 2
+      });
+    }
+
+    const payload = {
+      owner_name: profileForm.owner_name.trim(),
+      blood_group: profileForm.blood_group,
+      allergies: profileForm.allergies.trim(),
+      conditions: profileForm.conditions.trim(),
+      hospital_name: profileForm.hospital_name.trim(),
+      emergency_contacts: contacts
+    };
+
+    try {
+      const res = await fetch(`/api/vault/${vaultId}/update`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setShowEditProfile(false);
+        // Sync with local device storage
+        const currentVaults = getUserVaults();
+        const updated = currentVaults.map(v => {
+          if (v.id && v.id.toUpperCase() === (vaultId || '').toUpperCase()) {
+            return {
+              ...v,
+              owner_name: payload.owner_name,
+              blood_group: payload.blood_group,
+              allergies: payload.allergies,
+              conditions: payload.conditions,
+              hospital_name: payload.hospital_name,
+              emergency_contacts: contacts
+            };
+          }
+          return v;
+        });
+        localStorage.setItem('prana_user_vaults', JSON.stringify(updated));
+        fetchVault();
+        alert('Vault profile & emergency contacts updated successfully!');
+      } else {
+        alert(data.error || 'Failed to update vault details');
+      }
+    } catch (err) {
+      alert('Error updating vault profile');
     }
   };
 
@@ -254,7 +353,16 @@ export function DashboardPage({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowEditProfile(true)}
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+          >
+            <Edit3 className="w-4 h-4" />
+            <span>Edit Profile & Contacts</span>
+          </button>
+
           <button
             onClick={() => onOpenPrintable(vault)}
             className="px-3.5 py-2 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs hover:bg-indigo-100 flex items-center gap-1.5"
@@ -635,6 +743,201 @@ export function DashboardPage({
                   className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-200 cursor-pointer"
                 >
                   Save Insurance Details
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile & Contacts Modal */}
+      {showEditProfile && (
+        <div 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowEditProfile(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 modal-backdrop animate-fade-in cursor-pointer overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 relative cursor-default my-auto max-h-[92vh] flex flex-col"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-emerald-600" />
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 leading-tight">Edit Profile & Contacts</h3>
+                  <span className="text-[11px] text-slate-500 font-medium font-mono">Vault ID: {vault.id}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditProfile(false)}
+                className="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="overflow-y-auto flex-1 pr-1 my-3 space-y-4">
+              {/* Section 1: Personal Info */}
+              <div className="space-y-3">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 block">
+                  1. Personal Medical Profile
+                </span>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Your Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.owner_name}
+                    onChange={(e) => setProfileForm({ ...profileForm, owner_name: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-bold text-sm text-slate-900 focus:outline-none focus:border-emerald-600"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Blood Group *
+                    </label>
+                    <select
+                      value={profileForm.blood_group}
+                      onChange={(e) => setProfileForm({ ...profileForm, blood_group: e.target.value })}
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-bold text-sm text-slate-900 focus:outline-none focus:border-emerald-600"
+                    >
+                      {['O+ve', 'O-ve', 'A+ve', 'A-ve', 'B+ve', 'B-ve', 'AB+ve', 'AB-ve'].map(bg => (
+                        <option key={bg} value={bg}>{bg}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Preferred Hospital
+                    </label>
+                    <input
+                      type="text"
+                      value={profileForm.hospital_name}
+                      onChange={(e) => setProfileForm({ ...profileForm, hospital_name: e.target.value })}
+                      placeholder="e.g. CMC-VELLORE"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Critical Allergies / Alerts
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.allergies}
+                    onChange={(e) => setProfileForm({ ...profileForm, allergies: e.target.value })}
+                    placeholder="e.g. Throat Infection, Penicillin Allergy"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Medical Conditions
+                  </label>
+                  <input
+                    type="text"
+                    value={profileForm.conditions}
+                    onChange={(e) => setProfileForm({ ...profileForm, conditions: e.target.value })}
+                    placeholder="e.g. Hypertension, Asthma"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
+              </div>
+
+              {/* Section 2: Emergency Contacts */}
+              <div className="space-y-3 pt-3 border-t border-slate-200">
+                <span className="text-[11px] font-black uppercase tracking-wider text-red-600 block">
+                  2. Emergency Contacts & Mobile Numbers
+                </span>
+
+                {/* Contact 1 */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="text-xs font-bold text-slate-800 block">
+                    Contact 1 (Primary Guardian)
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      value={profileForm.contact1_name}
+                      onChange={(e) => setProfileForm({ ...profileForm, contact1_name: e.target.value })}
+                      placeholder="Full Name (e.g. Father)"
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-900"
+                    />
+                    <input
+                      type="text"
+                      value={profileForm.contact1_rel}
+                      onChange={(e) => setProfileForm({ ...profileForm, contact1_rel: e.target.value })}
+                      placeholder="Relationship (e.g. Father)"
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-900"
+                    />
+                    <input
+                      type="tel"
+                      value={profileForm.contact1_phone}
+                      onChange={(e) => setProfileForm({ ...profileForm, contact1_phone: e.target.value })}
+                      placeholder="Mobile Phone"
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono font-bold text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                {/* Contact 2 */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <span className="text-xs font-bold text-slate-800 block">
+                    Contact 2 (Secondary Guardian)
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      value={profileForm.contact2_name}
+                      onChange={(e) => setProfileForm({ ...profileForm, contact2_name: e.target.value })}
+                      placeholder="Full Name (e.g. Mother)"
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-900"
+                    />
+                    <input
+                      type="text"
+                      value={profileForm.contact2_rel}
+                      onChange={(e) => setProfileForm({ ...profileForm, contact2_rel: e.target.value })}
+                      placeholder="Relationship (e.g. Mother)"
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-900"
+                    />
+                    <input
+                      type="tel"
+                      value={profileForm.contact2_phone}
+                      onChange={(e) => setProfileForm({ ...profileForm, contact2_phone: e.target.value })}
+                      placeholder="Mobile Phone"
+                      className="px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono font-bold text-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="shrink-0 pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditProfile(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-200 cursor-pointer active:scale-95 transition-transform"
+                >
+                  Save Profile & Contacts
                 </button>
               </div>
             </form>
