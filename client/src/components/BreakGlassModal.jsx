@@ -4,12 +4,19 @@ import { Stethoscope, ShieldAlert, Radio, Clock, AlertTriangle, X, Check } from 
 
 export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess }) {
   const { t } = useLanguage();
-  const [responderName, setResponderName] = useState('Dr. Rajesh Mehta (EMT)');
-  const [responderOrg, setResponderOrg] = useState('108 GVK EMRI Emergency Response');
-  const [responderBadge, setResponderBadge] = useState('EMT-9082');
-  const [reason, setReason] = useState('Patient unconscious at accident scene; suspected traumatic head injury.');
+  const [responderName, setResponderName] = useState('');
+  const [responderOrg, setResponderOrg] = useState('');
+  const [responderBadge, setResponderBadge] = useState('');
+  const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleFillDemo = () => {
+    setResponderName('Dr. Rajesh Mehta (EMT)');
+    setResponderOrg('108 GVK EMRI Emergency Response');
+    setResponderBadge('EMT-9082');
+    setReason('Patient unconscious at accident scene; suspected traumatic head injury.');
+  };
 
   if (!isOpen) return null;
 
@@ -92,6 +99,17 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
 
         {/* Form Inputs */}
         <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
+          <div className="flex items-center justify-between text-xs text-slate-500 pb-0.5">
+            <span className="font-semibold text-slate-600">Enter responder credentials:</span>
+            <button
+              type="button"
+              onClick={handleFillDemo}
+              className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
+            >
+              ⚡ Tester: Fill Sample Info
+            </button>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
@@ -101,6 +119,8 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
                 type="text"
                 value={responderName}
                 onChange={(e) => setResponderName(e.target.value)}
+                placeholder="e.g. Dr. Rajesh Mehta / Paramedic Name"
+                autoComplete="off"
                 className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
                 required
               />
@@ -114,6 +134,8 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
                 type="text"
                 value={responderBadge}
                 onChange={(e) => setResponderBadge(e.target.value)}
+                placeholder="e.g. EMT-9082 or Medical Reg #"
+                autoComplete="off"
                 className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
                 required
               />
@@ -128,6 +150,8 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
               type="text"
               value={responderOrg}
               onChange={(e) => setResponderOrg(e.target.value)}
+              placeholder="e.g. 108 GVK EMRI Emergency Response"
+              autoComplete="off"
               className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
               required
             />
@@ -141,6 +165,7 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
               rows={2}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g. Patient unconscious at accident scene; suspected traumatic head injury."
               className="w-full px-3.5 py-2.5 rounded-xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-sm font-semibold text-slate-900"
               required
             />
