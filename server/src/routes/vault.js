@@ -2,7 +2,46 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { dbGet, dbRun, dbAll } = require('../db');
-const { encryptField, decryptField, generateVaultId } = require('../crypto');
+const { encryptField, decryptField, generateVaultId, hashValue, generateOTP } = require('../crypto');
+const { dispatchOTP } = require('../notifications');
+
+/**
+ * Helper to fetch and decrypt full vault data
+ */
+async function fetchFullDecryptedVault(vaultId) {
+  const vault = await dbGet('SELECT * FROM vaults WHERE id = ?', [vaultId]);
+  if (!vault) return null;
+
+  const contacts = await dbAll('SELECT * FROM emergency_contacts WHERE vault_id = ? ORDER BY priority ASC', [vaultId]);
+  const insurance = await dbGet('SELECT * FROM insurance_details WHERE vault_id = ?', [vaultId]);
+  const documents = await dbAll('SELECT * FROM documents WHERE vault_id = ?', [vaultId]);
+  const permissions = await dbAll('SELECT * FROM access_permissions WHERE vault_id = ?', [vaultId]);
+  const incidents = await dbAll('SELECT * FROM incident_history WHERE vault_id = ? ORDER BY incident_date DESC', [vaultId]);
+
+  return {
+    ...vault,
+    allergies: decryptField(vault.allergies_enc),
+    conditions: decryptField(vault.conditions_enc),
+    medications: decryptField(vault.medications_enc),
+    implants: decryptField(vault.implants_enc),
+    primary_doctor: decryptField(vault.primary_doctor_enc),
+    doctor_phone: decryptField(vault.doctor_phone_enc),
+    home_address: decryptField(vault.home_address_enc),
+    emergency_instructions: decryptField(vault.emergency_instructions_enc),
+    emergency_contacts: contacts,
+    insurance: insurance ? {
+      ...insurance,
+      policy_number: decryptField(insurance.policy_number_enc),
+      notes: decryptField(insurance.notes_enc)
+    } : null,
+    documents,
+    permissions: permissions.map(p => ({
+      ...p,
+      allowed_categories: JSON.parse(p.allowed_categories || '[]')
+    })),
+    incidents
+  };
+}
 
 /**
  * POST /api/vault/create
@@ -151,47 +190,232 @@ router.post('/create', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    const vaultId = req.params.id;
-    const vault = await dbGet('SELECT * FROM vaults WHERE id = ?', [vaultId]);
-    if (!vault) {
+    const fullVault = await fetchFullDecryptedVault(req.params.id);
+    if (!fullVault) {
       return res.status(404).json({ error: 'Vault not found' });
     }
-
-    const contacts = await dbAll('SELECT * FROM emergency_contacts WHERE vault_id = ? ORDER BY priority ASC', [vaultId]);
-    const insurance = await dbGet('SELECT * FROM insurance_details WHERE vault_id = ?', [vaultId]);
-    const documents = await dbAll('SELECT * FROM documents WHERE vault_id = ?', [vaultId]);
-    const permissions = await dbAll('SELECT * FROM access_permissions WHERE vault_id = ?', [vaultId]);
-    const incidents = await dbAll('SELECT * FROM incident_history WHERE vault_id = ? ORDER BY incident_date DESC', [vaultId]);
-
-    // Decrypt fields for owner view
-    const fullVault = {
-      ...vault,
-      allergies: decryptField(vault.allergies_enc),
-      conditions: decryptField(vault.conditions_enc),
-      medications: decryptField(vault.medications_enc),
-      implants: decryptField(vault.implants_enc),
-      primary_doctor: decryptField(vault.primary_doctor_enc),
-      doctor_phone: decryptField(vault.doctor_phone_enc),
-      home_address: decryptField(vault.home_address_enc),
-      emergency_instructions: decryptField(vault.emergency_instructions_enc),
-      emergency_contacts: contacts,
-      insurance: insurance ? {
-        ...insurance,
-        policy_number: decryptField(insurance.policy_number_enc),
-        notes: decryptField(insurance.notes_enc)
-      } : null,
-      documents,
-      permissions: permissions.map(p => ({
-        ...p,
-        allowed_categories: JSON.parse(p.allowed_categories || '[]')
-      })),
-      incidents
-    };
-
     return res.json({ success: true, vault: fullVault });
   } catch (err) {
     console.error('Error fetching vault:', err);
     return res.status(500).json({ error: 'Failed to fetch vault' });
+  }
+});
+
+/**
+ * POST /api/vault/check-existing
+ * Check if a vault already exists with this phone number or owner name
+ * Body: { phone?: string, name?: string }
+ */
+router.post('/check-existing', async (req, res) => {
+  try {
+    const { phone, name } = req.body;
+    if (!phone && !name) {
+      return res.status(400).json({ error: 'Phone or name required' });
+    }
+
+    let match = null;
+
+    if (phone) {
+      const cleanDigits = phone.replace(/[^0-9]/g, '');
+      const last10 = cleanDigits.slice(-10);
+
+      if (last10.length >= 8) {
+        // Search in emergency_contacts
+        const contactMatch = await dbGet(
+          `SELECT v.id, v.owner_name, v.blood_group, v.created_at, ec.phone, ec.name as contact_name
+           FROM emergency_contacts ec
+           JOIN vaults v ON ec.vault_id = v.id
+           WHERE ec.phone LIKE ?
+           ORDER BY v.created_at DESC LIMIT 1`,
+          [`%${last10}%`]
+        );
+
+        if (contactMatch) {
+          match = contactMatch;
+        } else {
+          // Check access_permissions
+          const permMatch = await dbGet(
+            `SELECT v.id, v.owner_name, v.blood_group, v.created_at, ap.grantee_phone as phone, ap.grantee_name as contact_name
+             FROM access_permissions ap
+             JOIN vaults v ON ap.vault_id = v.id
+             WHERE ap.grantee_phone LIKE ?
+             ORDER BY v.created_at DESC LIMIT 1`,
+            [`%${last10}%`]
+          );
+          if (permMatch) match = permMatch;
+        }
+      }
+    }
+
+    // Secondary fallback: if no phone match but name provided with at least 4 characters
+    if (!match && name && name.trim().length >= 4) {
+      const nameMatch = await dbGet(
+        `SELECT v.id, v.owner_name, v.blood_group, v.created_at, ec.phone, ec.name as contact_name
+         FROM vaults v
+         LEFT JOIN emergency_contacts ec ON v.id = ec.vault_id
+         WHERE LOWER(v.owner_name) = LOWER(?)
+         ORDER BY v.created_at DESC LIMIT 1`,
+        [name.trim()]
+      );
+      if (nameMatch && nameMatch.phone) {
+        match = nameMatch;
+      }
+    }
+
+    if (!match) {
+      return res.json({ found: false });
+    }
+
+    // Mask phone and name for security
+    const rawPhone = match.phone || '';
+    const cleanPhoneDigits = rawPhone.replace(/[^0-9]/g, '');
+    const maskedPhone = cleanPhoneDigits.length >= 10
+      ? `+91 *****${cleanPhoneDigits.slice(-4)}`
+      : 'Registered Phone';
+
+    const rawName = match.owner_name || '';
+    const nameParts = rawName.split(' ');
+    const maskedName = nameParts.map(p => p.length > 2 ? p[0] + '***' : p).join(' ');
+
+    return res.json({
+      found: true,
+      vaultId: match.id,
+      maskedName,
+      ownerName: match.owner_name,
+      bloodGroup: match.blood_group,
+      maskedPhone,
+      targetPhone: rawPhone,
+      createdAt: match.created_at
+    });
+  } catch (err) {
+    console.error('Error checking existing vault:', err);
+    return res.status(500).json({ error: 'Failed to check existing vault' });
+  }
+});
+
+/**
+ * POST /api/vault/recover/send-otp
+ * Body: { vaultId: string, phone: string }
+ */
+router.post('/recover/send-otp', async (req, res) => {
+  try {
+    const { vaultId, phone } = req.body;
+    if (!vaultId || !phone) {
+      return res.status(400).json({ error: 'Vault ID and phone are required' });
+    }
+
+    // Verify this phone is indeed associated with this vault
+    const cleanDigits = phone.replace(/[^0-9]/g, '').slice(-10);
+    const contact = await dbGet(
+      `SELECT * FROM emergency_contacts WHERE vault_id = ? AND phone LIKE ? LIMIT 1`,
+      [vaultId, `%${cleanDigits}%`]
+    );
+    const perm = !contact ? await dbGet(
+      `SELECT * FROM access_permissions WHERE vault_id = ? AND grantee_phone LIKE ? LIMIT 1`,
+      [vaultId, `%${cleanDigits}%`]
+    ) : null;
+
+    if (!contact && !perm) {
+      return res.status(404).json({ error: 'Phone number does not match this vault' });
+    }
+
+    const cleanPhone = phone.replace(/[^0-9+]/g, '');
+    const code = generateOTP();
+    const codeHash = hashValue(code);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
+
+    const otpId = uuidv4();
+    await dbRun(
+      `INSERT INTO otps (id, phone, code_hash, vault_id, action, expires_at)
+       VALUES (?, ?, ?, ?, 'vault_recovery', ?)`,
+      [otpId, cleanPhone, codeHash, vaultId, expiresAt]
+    );
+
+    await dispatchOTP(cleanPhone, code, 'vault_recovery');
+
+    return res.json({
+      success: true,
+      message: `Recovery OTP sent to ${cleanPhone}. Valid for 5 minutes.`,
+      debug_otp: code, // Simulated for developer / testing convenience
+      expires_in_seconds: 300
+    });
+  } catch (err) {
+    console.error('Error sending recovery OTP:', err);
+    return res.status(500).json({ error: 'Failed to send recovery OTP' });
+  }
+});
+
+/**
+ * POST /api/vault/recover/confirm
+ * Body: { vaultId: string, phone: string, otp: string, action: 'restore' | 'delete_old' }
+ */
+router.post('/recover/confirm', async (req, res) => {
+  try {
+    const { vaultId, phone, otp, action } = req.body;
+    if (!vaultId || !phone || !otp || !action) {
+      return res.status(400).json({ error: 'Vault ID, phone, OTP code, and action are required' });
+    }
+
+    const cleanPhone = phone.replace(/[^0-9+]/g, '');
+    const codeHash = hashValue(otp);
+
+    const otpRecord = await dbGet(
+      `SELECT * FROM otps 
+       WHERE phone = ? AND code_hash = ? AND verified = 0 AND expires_at > datetime('now')
+       ORDER BY created_at DESC LIMIT 1`,
+      [cleanPhone, codeHash]
+    );
+
+    if (!otpRecord) {
+      return res.status(401).json({ error: 'Invalid or expired OTP code' });
+    }
+
+    // Mark OTP as verified
+    await dbRun('UPDATE otps SET verified = 1 WHERE id = ?', [otpRecord.id]);
+
+    if (action === 'delete_old') {
+      // User says: old vault was a test or abandoned, delete it to keep database lean!
+      await dbRun('DELETE FROM access_logs WHERE vault_id = ?', [vaultId]);
+      await dbRun('DELETE FROM documents WHERE vault_id = ?', [vaultId]);
+      await dbRun('DELETE FROM emergency_contacts WHERE vault_id = ?', [vaultId]);
+      await dbRun('DELETE FROM insurance_details WHERE vault_id = ?', [vaultId]);
+      await dbRun('DELETE FROM access_permissions WHERE vault_id = ?', [vaultId]);
+      await dbRun('DELETE FROM incident_history WHERE vault_id = ?', [vaultId]);
+      await dbRun('DELETE FROM vaults WHERE id = ?', [vaultId]);
+
+      return res.json({
+        success: true,
+        action: 'deleted',
+        message: `Previous vault ${vaultId} has been permanently erased from the database.`
+      });
+    }
+
+    if (action === 'restore') {
+      // User says: YES, this is my old vault! Restore it to my device!
+      const fullVault = await fetchFullDecryptedVault(vaultId);
+      if (!fullVault) {
+        return res.status(404).json({ error: 'Vault not found' });
+      }
+
+      // Record audit log
+      await dbRun(
+        `INSERT INTO access_logs (id, vault_id, actor_type, actor_identifier, reason, tier_accessed, categories_unlocked)
+         VALUES (?, ?, 'owner_recovery', ?, 'Vault restored to device via verified phone OTP', 'Tier 2', ?)`,
+        [uuidv4(), vaultId, cleanPhone, JSON.stringify(['all_categories'])]
+      );
+
+      return res.json({
+        success: true,
+        action: 'restored',
+        vault: fullVault,
+        message: `Vault ${vaultId} successfully restored to your device!`
+      });
+    }
+
+    return res.status(400).json({ error: 'Invalid action' });
+  } catch (err) {
+    console.error('Error confirming vault recovery:', err);
+    return res.status(500).json({ error: 'Failed to process recovery confirmation' });
   }
 });
 

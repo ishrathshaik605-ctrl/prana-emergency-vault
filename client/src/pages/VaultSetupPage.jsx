@@ -3,7 +3,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { saveUserVault } from '../utils/vaultStorage';
 import { 
   ShieldCheck, HeartPulse, Phone, Hospital, 
-  ArrowRight, ArrowLeft, Check, Sparkles, User, FileText, Volume2 
+  ArrowRight, ArrowLeft, Check, Sparkles, User, FileText, Volume2,
+  AlertTriangle, Trash2, CheckCircle2, X
 } from 'lucide-react';
 
 export function VaultSetupPage({ onComplete, onCancel }) {
@@ -11,6 +12,16 @@ export function VaultSetupPage({ onComplete, onCancel }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isAssistedSetup, setIsAssistedSetup] = useState(false);
+
+  // Duplicate Vault Detection & Recovery State
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
+  const [duplicateMatch, setDuplicateMatch] = useState(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [duplicateAction, setDuplicateAction] = useState('prompt'); // 'prompt' | 'otp_restore' | 'otp_delete'
+  const [otpCode, setOtpCode] = useState('');
+  const [otpDebug, setOtpDebug] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [recoveryError, setRecoveryError] = useState('');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -100,13 +111,132 @@ export function VaultSetupPage({ onComplete, onCancel }) {
     }
   };
 
-  const handleNextStep = () => {
+  const checkExistingVault = async () => {
+    if (!formData.contact1_phone.trim()) {
+      setStep(4);
+      return;
+    }
+    try {
+      setCheckingDuplicate(true);
+      setRecoveryError('');
+      const res = await fetch('/api/vault/check-existing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: formData.contact1_phone,
+          name: formData.owner_name
+        })
+      });
+      const data = await res.json();
+      setCheckingDuplicate(false);
+      if (data.found) {
+        setDuplicateMatch(data);
+        setDuplicateAction('prompt');
+        setShowDuplicateModal(true);
+        return;
+      }
+    } catch (e) {
+      console.warn('Error checking existing vault:', e);
+      setCheckingDuplicate(false);
+    }
+    setStep(4);
+  };
+
+  const handleSendRecoveryOTP = async (targetAction) => {
+    if (!duplicateMatch) return;
+    setOtpLoading(true);
+    setRecoveryError('');
+    try {
+      const res = await fetch('/api/vault/recover/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vaultId: duplicateMatch.vaultId,
+          phone: duplicateMatch.targetPhone || formData.contact1_phone
+        })
+      });
+      const data = await res.json();
+      setOtpLoading(false);
+      if (data.success) {
+        setOtpDebug(data.debug_otp || '');
+        setDuplicateAction(targetAction === 'restore' ? 'otp_restore' : 'otp_delete');
+      } else {
+        setRecoveryError(data.error || 'Failed to dispatch verification OTP');
+      }
+    } catch (e) {
+      setOtpLoading(false);
+      setRecoveryError('Network error while requesting verification OTP');
+    }
+  };
+
+  const handleConfirmRecovery = async (e) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.trim().length < 4) {
+      setRecoveryError('Please enter the 6-digit verification code');
+      return;
+    }
+    setOtpLoading(true);
+    setRecoveryError('');
+
+    const action = duplicateAction === 'otp_restore' ? 'restore' : 'delete_old';
+
+    try {
+      const res = await fetch('/api/vault/recover/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vaultId: duplicateMatch.vaultId,
+          phone: duplicateMatch.targetPhone || formData.contact1_phone,
+          otp: otpCode.trim(),
+          action
+        })
+      });
+      const data = await res.json();
+      setOtpLoading(false);
+
+      if (!res.ok || !data.success) {
+        setRecoveryError(data.error || 'Invalid or expired OTP code');
+        return;
+      }
+
+      if (action === 'restore' && data.vault) {
+        // Successfully verified & recovered! Save to device storage
+        saveUserVault(data.vault);
+        setShowDuplicateModal(false);
+        alert(`Success! Your existing emergency vault (${data.vault.id}) has been restored to this device.`);
+        onComplete(data.vault.id, data.vault);
+        return;
+      }
+
+      if (action === 'delete_old') {
+        // Successfully erased old duplicate vault from DB!
+        setShowDuplicateModal(false);
+        setDuplicateMatch(null);
+        alert(`Previous duplicate vault ${duplicateMatch.vaultId} erased from database. Continuing with your fresh vault setup.`);
+        setStep(4);
+      }
+    } catch (e) {
+      setOtpLoading(false);
+      setRecoveryError('Error verifying recovery code: ' + e.message);
+    }
+  };
+
+  const handleNextStep = async () => {
     if (step === 1 && !formData.owner_name.trim()) {
       alert('Please enter your full name');
       return;
     }
     if (step === 2 && !formData.allergies.trim()) {
       alert('Please enter allergies or type "None"');
+      return;
+    }
+    if (step === 3) {
+      if (!formData.contact1_phone.trim()) {
+        alert('Please enter at least one emergency contact mobile number');
+        return;
+      }
+      // Check database for existing vault before proceeding to Step 4
+      await checkExistingVault();
       return;
     }
     if (step < 4) {
@@ -619,16 +749,17 @@ export function VaultSetupPage({ onComplete, onCancel }) {
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+                disabled={checkingDuplicate}
+                className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-black text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all disabled:opacity-60 cursor-pointer"
               >
-                <span>{t('continue_btn')}</span>
+                <span>{checkingDuplicate ? 'Checking Vaults...' : t('continue_btn')}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={loading}
-                className="px-7 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-red-200 disabled:opacity-50"
+                className="px-7 py-3.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-red-200 disabled:opacity-50 cursor-pointer"
               >
                 <Check className="w-5 h-5" />
                 <span>{loading ? 'Configuring Vault...' : t('create_vault_btn')}</span>
@@ -637,6 +768,193 @@ export function VaultSetupPage({ onComplete, onCancel }) {
           </div>
         </form>
       </div>
+
+      {/* Existing Vault Duplicate Detection & Recovery Modal */}
+      {showDuplicateModal && duplicateMatch && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 modal-backdrop animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative animate-scale-up"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 leading-tight">
+                    {duplicateAction === 'prompt' ? 'Existing Vault Detected' : 'OTP Verification'}
+                  </h3>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    ID: {duplicateMatch.vaultId}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDuplicateModal(false);
+                  setDuplicateAction('prompt');
+                  setOtpCode('');
+                  setRecoveryError('');
+                }}
+                className="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* STAGE 1: PROMPT WITH 2 OPTIONS */}
+            {duplicateAction === 'prompt' && (
+              <div className="py-4 space-y-4">
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
+                  <div className="flex justify-between items-center text-slate-700">
+                    <span className="text-slate-500 font-bold uppercase text-[10px]">Registered Name</span>
+                    <strong className="font-bold text-slate-900">{duplicateMatch.ownerName}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-700">
+                    <span className="text-slate-500 font-bold uppercase text-[10px]">Blood Group</span>
+                    <span className="font-bold text-red-600">{duplicateMatch.bloodGroup}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-700">
+                    <span className="text-slate-500 font-bold uppercase text-[10px]">Registered Phone</span>
+                    <span className="font-mono font-bold text-slate-900">{duplicateMatch.maskedPhone}</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  We found an existing emergency vault matching this phone number in our database. 
+                  <strong> Did you previously create this vault on another device or phone?</strong>
+                </p>
+
+                <div className="space-y-2.5 pt-1">
+                  {/* Option 1: Yes, restore */}
+                  <button
+                    type="button"
+                    onClick={() => handleSendRecoveryOTP('restore')}
+                    disabled={otpLoading}
+                    className="w-full p-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-200 flex items-center justify-between transition-all active:scale-95 cursor-pointer"
+                  >
+                    <div className="text-left">
+                      <span className="block font-black text-sm">Yes, this is mine — Restore to this device</span>
+                      <span className="text-[10px] text-emerald-100 font-normal">Saves this vault to your device via fast OTP verification</span>
+                    </div>
+                    <CheckCircle2 className="w-5 h-5 shrink-0 ml-2" />
+                  </button>
+
+                  {/* Option 2: No / Delete old duplicate */}
+                  <button
+                    type="button"
+                    onClick={() => handleSendRecoveryOTP('delete_old')}
+                    disabled={otpLoading}
+                    className="w-full p-3.5 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center justify-between transition-all active:scale-95 cursor-pointer"
+                  >
+                    <div className="text-left">
+                      <span className="block font-black text-xs">No / That was a test — Delete old vault</span>
+                      <span className="text-[10px] text-rose-600/80 font-normal">Erases old vault from database & proceeds with new setup</span>
+                    </div>
+                    <Trash2 className="w-4 h-4 shrink-0 ml-2" />
+                  </button>
+                </div>
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDuplicateModal(false);
+                      setDuplicateAction('prompt');
+                    }}
+                    className="text-xs text-slate-500 hover:text-slate-800 underline font-medium cursor-pointer"
+                  >
+                    Change Phone Number or Edit Contact
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STAGE 2: OTP VERIFICATION */}
+            {(duplicateAction === 'otp_restore' || duplicateAction === 'otp_delete') && (
+              <form onSubmit={handleConfirmRecovery} className="py-4 space-y-4">
+                <div className="p-3 rounded-2xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900">
+                  <p>
+                    A 6-digit verification code was sent to <strong>{duplicateMatch.maskedPhone}</strong> to confirm authorization.
+                  </p>
+                </div>
+
+                {otpDebug && (
+                  <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono flex items-center justify-between">
+                    <span>Demo SMS Code: <strong>{otpDebug}</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => setOtpCode(otpDebug)}
+                      className="text-[11px] bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded font-bold cursor-pointer"
+                    >
+                      Auto-fill
+                    </button>
+                  </div>
+                )}
+
+                {recoveryError && (
+                  <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
+                    {recoveryError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Enter 6-Digit OTP Code
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="123456"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-emerald-600 focus:outline-none text-center text-2xl font-mono font-black tracking-widest text-slate-900"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDuplicateAction('prompt');
+                      setOtpCode('');
+                      setRecoveryError('');
+                    }}
+                    className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                  >
+                    Back
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={otpLoading}
+                    className={`flex-2 py-3 rounded-xl font-black text-xs text-white shadow-md transition-all active:scale-95 cursor-pointer ${
+                      duplicateAction === 'otp_restore'
+                        ? 'bg-emerald-600 hover:bg-emerald-700'
+                        : 'bg-rose-600 hover:bg-rose-700'
+                    }`}
+                  >
+                    {otpLoading
+                      ? 'Verifying...'
+                      : duplicateAction === 'otp_restore'
+                      ? 'Confirm & Restore Vault'
+                      : 'Confirm & Delete Old Vault'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

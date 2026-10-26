@@ -3,14 +3,15 @@ import { useLanguage } from '../context/LanguageContext';
 import { 
   ShieldAlert, HeartPulse, UserPlus, Search, 
   Smartphone, Printer, Sparkles, Stethoscope, ArrowRight, ShieldCheck,
-  CheckCircle2, Laptop, UserCheck, Edit3
+  CheckCircle2, Laptop, UserCheck, Edit3, RotateCcw, AlertTriangle, Trash2, X
 } from 'lucide-react';
 import { 
   hasUserCreatedVaults, 
   getUserVaults, 
   getActiveUserVault, 
   detectAndSaveDeviceIp,
-  setStoredVaultId
+  setStoredVaultId,
+  saveUserVault
 } from '../utils/vaultStorage';
 
 export function HomePage({ 
@@ -28,6 +29,16 @@ export function HomePage({
   const [userVaults, setUserVaults] = useState(getUserVaults());
   const [showDemoProfiles, setShowDemoProfiles] = useState(false);
   const [showScanner, setShowScanner] = useState(true);
+
+  // Vault Recovery State (for recovering previously created vaults)
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+  const [recoveryPhone, setRecoveryPhone] = useState('');
+  const [recoveryStep, setRecoveryStep] = useState('phone'); // 'phone' | 'otp'
+  const [recoveryMatch, setRecoveryMatch] = useState(null);
+  const [recoveryOtp, setRecoveryOtp] = useState('');
+  const [recoveryOtpDebug, setRecoveryOtpDebug] = useState('');
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [recoveryError, setRecoveryError] = useState('');
 
   const hasVaults = userVaults && userVaults.length > 0;
   const activeVault = getActiveUserVault() || (hasVaults ? userVaults[0] : null);
@@ -59,6 +70,100 @@ export function HomePage({
   const handleSelectUserVault = (vault) => {
     setStoredVaultId(vault.id);
     onSelectVault(vault.id);
+  };
+
+  const handleSearchVaultForRecovery = async (e) => {
+    e.preventDefault();
+    if (!recoveryPhone.trim() || recoveryPhone.replace(/[^0-9]/g, '').length < 8) {
+      setRecoveryError('Please enter a valid mobile number (min 8 digits)');
+      return;
+    }
+    setRecoveryLoading(true);
+    setRecoveryError('');
+    try {
+      const res = await fetch('/api/vault/check-existing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: recoveryPhone.trim() })
+      });
+      const data = await res.json();
+      if (!data.found) {
+        setRecoveryLoading(false);
+        setRecoveryError('No emergency vault found matching this phone number. Please check the number or create a new vault.');
+        return;
+      }
+
+      setRecoveryMatch(data);
+
+      // Automatically dispatch recovery OTP to that registered phone
+      const otpRes = await fetch('/api/vault/recover/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vaultId: data.vaultId,
+          phone: data.targetPhone || recoveryPhone
+        })
+      });
+      const otpData = await otpRes.json();
+      setRecoveryLoading(false);
+
+      if (otpData.success) {
+        setRecoveryOtpDebug(otpData.debug_otp || '');
+        setRecoveryStep('otp');
+      } else {
+        setRecoveryError(otpData.error || 'Failed to send recovery OTP');
+      }
+    } catch (err) {
+      setRecoveryLoading(false);
+      setRecoveryError('Network error while searching for vault: ' + err.message);
+    }
+  };
+
+  const handleConfirmHomeRecovery = async (e) => {
+    e.preventDefault();
+    if (!recoveryOtp.trim() || recoveryOtp.trim().length < 4) {
+      setRecoveryError('Please enter the 6-digit verification code');
+      return;
+    }
+    setRecoveryLoading(true);
+    setRecoveryError('');
+
+    try {
+      const res = await fetch('/api/vault/recover/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vaultId: recoveryMatch.vaultId,
+          phone: recoveryMatch.targetPhone || recoveryPhone,
+          otp: recoveryOtp.trim(),
+          action: 'restore'
+        })
+      });
+      const data = await res.json();
+      setRecoveryLoading(false);
+
+      if (!res.ok || !data.success || !data.vault) {
+        setRecoveryError(data.error || 'Invalid or expired OTP code');
+        return;
+      }
+
+      // Save to device storage
+      saveUserVault(data.vault);
+      const updatedVaults = getUserVaults();
+      setUserVaults(updatedVaults);
+      setShowDemoProfiles(false);
+      setShowRecoveryModal(false);
+      setRecoveryPhone('');
+      setRecoveryOtp('');
+      setRecoveryMatch(null);
+      setRecoveryStep('phone');
+
+      alert(`Success! Emergency vault (${data.vault.id}) for ${data.vault.owner_name} has been restored to this device.`);
+      onOpenDashboard(data.vault.id);
+    } catch (err) {
+      setRecoveryLoading(false);
+      setRecoveryError('Error verifying recovery code: ' + err.message);
+    }
   };
 
   return (
@@ -207,10 +312,11 @@ export function HomePage({
             </button>
           </div>
 
-          {/* Multiple Family Vaults Switcher (if user created more than 1) */}
-          {userVaults.length > 1 && (
-            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] text-slate-400 font-bold">Switch Family Profile:</span>
+          {/* Family Profiles Switcher & Recovery Link */}
+          {/* Profile Switcher & Recovery */}{userVaults.length > 0 && (
+            <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] text-slate-400 font-bold">Switch Profile:</span>
               {userVaults.map(v => (
                 <button
                   key={v.id}
@@ -225,6 +331,19 @@ export function HomePage({
                   {v.owner_name} ({v.blood_group})
                 </button>
               ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRecoveryModal(true);
+                  setRecoveryStep('phone');
+                  setRecoveryError('');
+                }}
+                className="text-[11px] font-bold text-indigo-300 hover:text-white flex items-center gap-1 underline underline-offset-2 ml-auto cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Recover an earlier vault</span>
+              </button>
             </div>
           )}
         </div>
@@ -336,6 +455,35 @@ export function HomePage({
                   Tier-0 Unlock
                 </span>
               </div>
+            </button>
+          </div>
+
+          {/* Lost Vault Recovery Card */}
+          <div className="bg-gradient-to-r from-indigo-50/90 via-white to-indigo-50/90 p-4 sm:p-5 rounded-3xl border border-indigo-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left mt-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-200">
+                <RotateCcw className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-black text-slate-900 block">
+                  Created your vault previously on another device or cleared your cache?
+                </span>
+                <span className="text-[11px] text-slate-600 block mt-0.5">
+                  Restore your existing emergency vault directly to this device using your registered phone number.
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowRecoveryModal(true);
+                setRecoveryStep('phone');
+                setRecoveryError('');
+              }}
+              className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md shadow-indigo-100 shrink-0 transition-transform active:scale-95 cursor-pointer flex items-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Recover Lost Vault</span>
             </button>
           </div>
         </div>
@@ -585,6 +733,169 @@ export function HomePage({
           >
             {showDemoProfiles ? '🧪 Hide Clinical Demo Profiles (AV-8842 / AV-7721)' : '🧪 Switch to Tester Mode (Show Clinical Personas)'}
           </button>
+        </div>
+      )}
+
+      {/* Vault Recovery Modal (For lost vaults / device switching) */}
+      {showRecoveryModal && (
+        <div 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowRecoveryModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 modal-backdrop animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative animate-scale-up"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
+                  <RotateCcw className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 leading-tight">
+                    Recover Existing Vault
+                  </h3>
+                  <span className="text-[11px] text-slate-500">
+                    Restore a previously registered vault to this device
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRecoveryModal(false);
+                  setRecoveryStep('phone');
+                  setRecoveryError('');
+                }}
+                className="p-1.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {recoveryError && (
+              <div className="mt-3 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+                {recoveryError}
+              </div>
+            )}
+
+            {/* STEP 1: ENTER PHONE NUMBER */}
+            {recoveryStep === 'phone' && (
+              <form onSubmit={handleSearchVaultForRecovery} className="py-4 space-y-4">
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Enter the <strong>Primary Mobile Number</strong> or emergency contact number you provided when creating your vault.
+                </p>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Registered Mobile Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={recoveryPhone}
+                    onChange={(e) => setRecoveryPhone(e.target.value)}
+                    placeholder="e.g. +91 98250 99991"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-base font-bold text-slate-900"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowRecoveryModal(false)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={recoveryLoading}
+                    className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-md shadow-indigo-200 disabled:opacity-50 cursor-pointer active:scale-95 transition-all"
+                  >
+                    {recoveryLoading ? 'Searching...' : 'Find My Vault →'}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* STEP 2: ENTER OTP */}
+            {recoveryStep === 'otp' && recoveryMatch && (
+              <form onSubmit={handleConfirmHomeRecovery} className="py-4 space-y-4">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs space-y-1">
+                  <div className="flex justify-between items-center text-emerald-900 font-bold">
+                    <span>Vault ID: {recoveryMatch.vaultId}</span>
+                    <span className="text-red-600">{recoveryMatch.bloodGroup}</span>
+                  </div>
+                  <div className="text-emerald-800">
+                    Owner: <strong>{recoveryMatch.ownerName}</strong>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-600">
+                  Enter the 6-digit OTP code sent to <strong>{recoveryMatch.maskedPhone}</strong> to verify authorization.
+                </p>
+
+                {recoveryOtpDebug && (
+                  <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono flex items-center justify-between">
+                    <span>Demo SMS Code: <strong>{recoveryOtpDebug}</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => setRecoveryOtp(recoveryOtpDebug)}
+                      className="text-[11px] bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded font-bold cursor-pointer"
+                    >
+                      Auto-fill
+                    </button>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                    Enter 6-Digit OTP Code
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={recoveryOtp}
+                    onChange={(e) => setRecoveryOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="123456"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-center text-2xl font-mono font-black tracking-widest text-slate-900"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRecoveryStep('phone');
+                      setRecoveryOtp('');
+                      setRecoveryError('');
+                    }}
+                    className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
+                  >
+                    Back
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={recoveryLoading}
+                    className="flex-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-xs text-white shadow-md shadow-indigo-200 disabled:opacity-50 transition-all active:scale-95 cursor-pointer"
+                  >
+                    {recoveryLoading ? 'Verifying...' : 'Verify & Restore Vault'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       )}
     </div>
