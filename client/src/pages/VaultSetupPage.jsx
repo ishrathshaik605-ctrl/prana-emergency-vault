@@ -63,8 +63,8 @@ export function VaultSetupPage({ onComplete, onCancel }) {
         medications: 'Clopidogrel 75mg, Amlodipine 5mg',
         implants: 'Cardiac Stent placed in LAD (2020)',
         organ_donor: 1,
-        primary_doctor: 'Dr. S. Bhatt (Cardiologist)',
-        doctor_phone: '+919825001122',
+        primary_doctor: '',
+        doctor_phone: '',
         hospital_name: 'Sterling Hospital, Ahmedabad',
         hospital_address: 'Gurukul Road, Memnagar, Ahmedabad',
         home_address: 'B-12, Shanti Niketan Society, Satellite, Ahmedabad',
@@ -91,8 +91,8 @@ export function VaultSetupPage({ onComplete, onCancel }) {
         medications: 'Sumatriptan 50mg (PRN)',
         implants: 'None',
         organ_donor: 1,
-        primary_doctor: 'Dr. Rita Sen',
-        doctor_phone: '+919830012345',
+        primary_doctor: '',
+        doctor_phone: '',
         hospital_name: 'AMRI Hospital, Kolkata',
         hospital_address: 'Dhakuria, Kolkata',
         home_address: 'Flat 3B, Lake View Enclave, Southern Avenue, Kolkata',
@@ -580,7 +580,8 @@ export function VaultSetupPage({ onComplete, onCancel }) {
                     type="text"
                     value={formData.primary_doctor}
                     onChange={(e) => setFormData({ ...formData, primary_doctor: e.target.value })}
-                    placeholder="Dr. K. Mehta (+919825012345)"
+                    placeholder="e.g. Dr. Name & Phone (Optional)"
+                    autoComplete="off"
                     className="w-full px-3 py-2.5 rounded-2xl border-2 border-slate-300 focus:border-red-600 focus:outline-none text-xs font-semibold text-slate-900"
                   />
                 </div>

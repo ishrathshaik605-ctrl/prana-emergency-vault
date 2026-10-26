@@ -1123,6 +1123,7 @@ export function DashboardPage({
                           value={profileForm.primary_doctor}
                           onChange={(e) => setProfileForm({ ...profileForm, primary_doctor: e.target.value })}
                           placeholder="e.g. Dr. A. K. Sharma (Cardiologist)"
+                          autoComplete="off"
                           className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-900"
                         />
                       </div>
@@ -1133,6 +1134,7 @@ export function DashboardPage({
                           value={profileForm.doctor_phone}
                           onChange={(e) => setProfileForm({ ...profileForm, doctor_phone: e.target.value })}
                           placeholder="e.g. +91 98400 12345"
+                          autoComplete="off"
                           className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono font-bold text-slate-900"
                         />
                       </div>
