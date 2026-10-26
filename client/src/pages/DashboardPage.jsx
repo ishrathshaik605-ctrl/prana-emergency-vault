@@ -9,7 +9,6 @@ import {
 import { 
   getUserVaults, 
   hasUserCreatedVaults, 
-  getStoredDeviceIp, 
   setStoredVaultId 
 } from '../utils/vaultStorage';
 
@@ -407,7 +406,7 @@ export function DashboardPage({
             </span>
             <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>📱 Recognized Device • IP: {getStoredDeviceIp()}</span>
+              <span>📱 Recognized Device</span>
             </span>
           </div>
         </div>

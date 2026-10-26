@@ -9,7 +9,6 @@ import {
   hasUserCreatedVaults, 
   getUserVaults, 
   getActiveUserVault, 
-  getStoredDeviceIp, 
   detectAndSaveDeviceIp,
   setStoredVaultId
 } from '../utils/vaultStorage';
@@ -26,7 +25,6 @@ export function HomePage({
 }) {
   const { t, speakText, lang } = useLanguage();
   const [manualId, setManualId] = useState('');
-  const [deviceIp, setDeviceIp] = useState(getStoredDeviceIp());
   const [userVaults, setUserVaults] = useState(getUserVaults());
   const [showDemoProfiles, setShowDemoProfiles] = useState(false);
   const [showScanner, setShowScanner] = useState(true);
@@ -35,9 +33,8 @@ export function HomePage({
   const activeVault = getActiveUserVault() || (hasVaults ? userVaults[0] : null);
 
   useEffect(() => {
-    detectAndSaveDeviceIp().then(ip => {
-      if (ip) setDeviceIp(ip);
-    });
+    // Store device IP in background storage for device-level recognition
+    detectAndSaveDeviceIp();
     const loaded = getUserVaults();
     setUserVaults(loaded);
     // If no custom vaults exist yet, show demo profiles so the first-time evaluator can explore
@@ -87,7 +84,7 @@ export function HomePage({
         {hasVaults && (
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold shadow-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>📱 Recognized Device • IP: {deviceIp}</span>
+            <span>📱 Recognized Device</span>
           </div>
         )}
 
