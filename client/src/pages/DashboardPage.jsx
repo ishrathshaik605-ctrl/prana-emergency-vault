@@ -854,9 +854,9 @@ export function DashboardPage({
                   <Edit3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-slate-900 leading-tight">Edit Whole Vault</h3>
+                  <h3 className="text-lg font-black text-slate-900 leading-tight">{t('edit_whole_vault')}</h3>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] text-slate-500 font-medium font-mono">Vault ID: {vault.id}</span>
+                    <span className="text-[11px] text-slate-500 font-medium font-mono">{t('vault_id_label')}: {vault.id}</span>
                     <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.2 rounded-full">All 4 Sections</span>
                   </div>
                 </div>
@@ -883,7 +883,7 @@ export function DashboardPage({
                 }`}
               >
                 <User className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">1. Personal</span>
+                <span className="truncate">1. {t('step_1')}</span>
               </button>
 
               <button
@@ -896,7 +896,7 @@ export function DashboardPage({
                 }`}
               >
                 <HeartPulse className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">2. Medical</span>
+                <span className="truncate">2. {t('step_2')}</span>
               </button>
 
               <button
@@ -909,7 +909,7 @@ export function DashboardPage({
                 }`}
               >
                 <Phone className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">3. Guardians</span>
+                <span className="truncate">3. {t('step_3')}</span>
               </button>
 
               <button
@@ -922,7 +922,7 @@ export function DashboardPage({
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">4. Insurance</span>
+                <span className="truncate">4. {t('step_4')}</span>
               </button>
             </div>
 

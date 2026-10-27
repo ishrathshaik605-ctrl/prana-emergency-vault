@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { 
   ShieldAlert, HeartPulse, UserPlus, Search, 
   Smartphone, Printer, Sparkles, Stethoscope, ArrowRight, ShieldCheck,
-  CheckCircle2, Laptop, UserCheck, Edit3, RotateCcw, AlertTriangle, Trash2, X
+  CheckCircle2, Laptop, UserCheck, Edit3, RotateCcw, AlertTriangle, Trash2, X, Volume2
 } from 'lucide-react';
 import { 
   hasUserCreatedVaults, 
@@ -24,7 +24,7 @@ export function HomePage({
   onOpenDashboard,
   currentVaultId = 'AV-8842'
 }) {
-  const { t, speakText, lang } = useLanguage();
+  const { t, speakText, lang, formatMedicalSpeech } = useLanguage();
   const [manualId, setManualId] = useState('');
   const [userVaults, setUserVaults] = useState(getUserVaults());
   const [showDemoProfiles, setShowDemoProfiles] = useState(false);
@@ -219,10 +219,10 @@ export function HomePage({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-400 text-slate-950 font-mono">
-                    YOUR REGISTERED VAULT
+                    {t('your_registered_vault')}
                   </span>
                   <span className="text-xs text-emerald-400 font-mono">
-                    ID: {activeVault.id}
+                    {t('vault_id_label')}: {activeVault.id}
                   </span>
                 </div>
                 <h3 className="text-2xl font-black text-white mt-1">
@@ -232,8 +232,27 @@ export function HomePage({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const speech = formatMedicalSpeech({
+                    owner_name: activeVault.owner_name,
+                    blood_group: activeVault.blood_group,
+                    critical_allergies: activeVault.allergies,
+                    critical_conditions: activeVault.conditions,
+                    emergency_contacts: activeVault.emergency_contacts
+                  });
+                  speakText(speech);
+                }}
+                title={t('voice_read')}
+                aria-label={t('voice_read')}
+                className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl border border-white/20 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Volume2 className="w-4 h-4 text-emerald-400" />
+                <span className="hidden sm:inline">{t('voice_read')}</span>
+              </button>
               <div className="bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/20 text-center">
-                <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">BLOOD GROUP</span>
+                <span className="text-[9px] uppercase tracking-wider text-slate-400 block font-bold">{t('blood_group')}</span>
                 <span className="text-xl font-black text-red-400">{activeVault.blood_group || 'O+ve'}</span>
               </div>
             </div>
@@ -242,24 +261,24 @@ export function HomePage({
           {/* Key Emergency Details Summary */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-              <span className="text-slate-400 block font-bold text-[10px] uppercase">Allergies / Critical</span>
+              <span className="text-slate-400 block font-bold text-[10px] uppercase">{t('allergies_critical')}</span>
               <span className="text-yellow-300 font-semibold mt-0.5 block line-clamp-1">
-                {activeVault.allergies || 'No severe allergies reported'}
+                {activeVault.allergies || t('no_allergies_reported')}
               </span>
             </div>
             <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-              <span className="text-slate-400 block font-bold text-[10px] uppercase">Emergency Contacts</span>
+              <span className="text-slate-400 block font-bold text-[10px] uppercase">{t('emergency_contacts')}</span>
               <span className="text-white font-semibold mt-0.5 block">
                 {activeVault.emergency_contacts?.length 
                   ? `${activeVault.emergency_contacts[0].name} (${activeVault.emergency_contacts[0].phone})` 
-                  : 'Guardians configured'}
+                  : t('guardians_configured')}
               </span>
             </div>
             <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-              <span className="text-slate-400 block font-bold text-[10px] uppercase">Device Link</span>
+              <span className="text-slate-400 block font-bold text-[10px] uppercase">{t('device_link')}</span>
               <span className="text-emerald-300 font-semibold mt-0.5 block flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                Persistent to this device
+                {t('persistent_to_device')}
               </span>
             </div>
           </div>
@@ -272,7 +291,7 @@ export function HomePage({
               className="p-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-xs shadow-lg shadow-red-900/30 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>Print QR Badge</span>
+              <span>{t('print_qr_badge')}</span>
             </button>
 
             <button
@@ -281,7 +300,7 @@ export function HomePage({
               className="p-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md shadow-emerald-950 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <Edit3 className="w-4 h-4" />
-              <span>Edit Whole Vault</span>
+              <span>{t('edit_whole_vault')}</span>
             </button>
 
             <button
@@ -290,7 +309,7 @@ export function HomePage({
               className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <HeartPulse className="w-4 h-4 text-red-400" />
-              <span>Test Tier-0 Unlock</span>
+              <span>{t('test_tier0_unlock')}</span>
             </button>
 
             <button
@@ -299,7 +318,7 @@ export function HomePage({
               className="p-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Household Hub</span>
+              <span>{t('household_hub')}</span>
             </button>
 
             <button
@@ -308,15 +327,15 @@ export function HomePage({
               className="p-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md shadow-indigo-950 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>+ Add Family</span>
+              <span>{t('add_family_btn')}</span>
             </button>
           </div>
 
           {/* Family Profiles Switcher & Recovery Link */}
-          {/* Profile Switcher & Recovery */}{userVaults.length > 0 && (
+          {userVaults.length > 0 && (
             <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] text-slate-400 font-bold">Switch Profile:</span>
+                <span className="text-[11px] text-slate-400 font-bold">{t('switch_profile')}</span>
               {userVaults.map(v => (
                 <button
                   key={v.id}
@@ -342,7 +361,7 @@ export function HomePage({
                 className="text-[11px] font-bold text-indigo-300 hover:text-white flex items-center gap-1 underline underline-offset-2 ml-auto cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Recover an earlier vault</span>
+                <span>{t('recover_earlier_vault')}</span>
               </button>
             </div>
           )}
@@ -354,7 +373,7 @@ export function HomePage({
         <div className="space-y-4">
           <div className="text-center">
             <span className="text-xs font-black uppercase tracking-widest text-slate-400">
-              Choose What You Want To Do
+              {t('choose_action_title')}
             </span>
           </div>
 
@@ -377,17 +396,17 @@ export function HomePage({
                   <Sparkles className="w-6 h-6 text-amber-600" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                  1. Testers
+                  {t('testers_label')}
                 </span>
               </div>
               <div className="font-black text-lg text-slate-900 group-hover:text-amber-700 transition-colors">
-                Tester Demo Profiles
+                {t('tester_profiles_title')}
               </div>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                1-click test evaluation with pre-seeded clinical personas (Ramesh Patel & Priya Sharma).
+                {t('tester_profiles_desc')}
               </p>
               <div className="mt-4 pt-3 border-t border-slate-200/70 flex items-center justify-between text-xs font-bold text-amber-700">
-                <span>{showDemoProfiles ? 'Hide Profiles ▲' : 'View Profiles ▼'}</span>
+                <span>{showDemoProfiles ? t('hide_profiles') : t('view_profiles')}</span>
                 <span className="font-mono text-[10px] bg-amber-200/60 px-2 py-0.5 rounded text-amber-900">
                   AV-8842 / AV-7721
                 </span>
@@ -405,19 +424,19 @@ export function HomePage({
                   <UserPlus className="w-6 h-6" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  2. Families
+                  {t('families_label')}
                 </span>
               </div>
               <div className="font-black text-lg text-slate-900 group-hover:text-emerald-700 transition-colors">
-                Create Your Own Vault
+                {t('create_own_vault_title')}
               </div>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                Register a real emergency vault for you or your family. Guided 2-minute setup. Free & encrypted.
+                {t('create_own_vault_desc')}
               </p>
               <div className="mt-4 pt-3 border-t border-emerald-200/70 flex items-center justify-between text-xs font-bold text-emerald-700">
-                <span>Start Setup Wizard →</span>
+                <span>{t('start_setup_wizard')}</span>
                 <span className="text-[10px] bg-emerald-200/60 px-2 py-0.5 rounded text-emerald-900 font-mono">
-                  Get New ID
+                  {t('get_new_id')}
                 </span>
               </div>
             </button>
@@ -440,17 +459,17 @@ export function HomePage({
                   <ShieldAlert className="w-6 h-6" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 text-red-800 border border-red-300">
-                  3. First Responders
+                  {t('first_responders_label')}
                 </span>
               </div>
               <div className="font-black text-lg text-slate-900 group-hover:text-red-700 transition-colors">
-                Emergency Scanner
+                {t('emergency_scanner_box_title')}
               </div>
               <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                Scan physical QR badge or enter Vault ID to instantly unlock Tier-0 lifesaver data & 108 rescue.
+                {t('emergency_scanner_box_desc')}
               </p>
               <div className="mt-4 pt-3 border-t border-red-200/70 flex items-center justify-between text-xs font-bold text-red-700">
-                <span>Open Scanner →</span>
+                <span>{t('open_scanner_btn')}</span>
                 <span className="text-[10px] bg-red-200/60 px-2 py-0.5 rounded text-red-900 font-mono">
                   Tier-0 Unlock
                 </span>
@@ -466,10 +485,10 @@ export function HomePage({
               </div>
               <div>
                 <span className="text-xs font-black text-slate-900 block">
-                  Created your vault previously on another device or cleared your cache?
+                  {t('recover_existing_vault_title')}
                 </span>
                 <span className="text-[11px] text-slate-600 block mt-0.5">
-                  Restore your existing emergency vault directly to this device using your registered phone number.
+                  {t('recover_existing_vault_desc')}
                 </span>
               </div>
             </div>
@@ -483,7 +502,7 @@ export function HomePage({
               className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md shadow-indigo-100 shrink-0 transition-transform active:scale-95 cursor-pointer flex items-center gap-1.5"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Recover Lost Vault</span>
+              <span>{t('recover_earlier_vault')}</span>
             </button>
           </div>
         </div>
@@ -497,19 +516,19 @@ export function HomePage({
               <Sparkles className="w-5 h-5 text-amber-600" />
               <div>
                 <h3 className="text-xs font-black uppercase tracking-wider text-amber-900">
-                  Instant Test Clinical Personas (Tester Mode)
+                  {t('clinical_demo_personas_title')}
                 </h3>
                 <p className="text-[11px] text-amber-700">
-                  Select either test profile below to evaluate live medical data without signing up.
+                  {t('clinical_demo_personas_desc')}
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setShowDemoProfiles(false)}
-              className="text-xs font-bold text-amber-800 hover:text-amber-950 px-3 py-1 bg-amber-200/50 rounded-lg"
+              className="text-xs font-bold text-amber-800 hover:text-amber-950 px-3 py-1 bg-amber-200/50 rounded-lg cursor-pointer"
             >
-              Close ▲
+              {t('hide_profiles')}
             </button>
           </div>
 
@@ -542,7 +561,7 @@ export function HomePage({
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-700">
-                <span>Evaluate Ramesh's Vault →</span>
+                <span>{t('evaluate_ramesh')}</span>
                 <span className="text-[11px] font-normal text-slate-400">{t('qr_family_paramedic')}</span>
               </div>
             </div>
@@ -560,7 +579,7 @@ export function HomePage({
                   <h4 className="text-xl font-black text-slate-900 mt-1.5 group-hover:text-blue-700 transition-colors">
                     Priya Sharma (29F)
                   </h4>
-                  <p className="text-xs text-slate-500">Vault ID: <strong className="font-mono text-slate-900">AV-7721</strong></p>
+                  <p className="text-xs text-slate-500">{t('vault_id_label')}: <strong className="font-mono text-slate-900">AV-7721</strong></p>
                 </div>
 
                 <div className="bg-red-50 text-red-600 font-black text-base px-3 py-1.5 rounded-xl border border-red-200">
@@ -575,7 +594,7 @@ export function HomePage({
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700">
-                <span>Evaluate Priya's Vault →</span>
+                <span>{t('evaluate_priya')}</span>
                 <span className="text-[11px] font-normal text-slate-400">{t('qr_family_paramedic')}</span>
               </div>
             </div>
@@ -593,10 +612,10 @@ export function HomePage({
               </div>
               <div>
                 <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">
-                  Emergency Scanner & ID Access
+                  {t('emergency_scanner_title')}
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
-                  Scan QR badge or type Vault ID to unlock Tier-0 lifesaver data immediately.
+                  {t('emergency_scanner_subtitle')}
                 </p>
               </div>
             </div>
@@ -606,7 +625,7 @@ export function HomePage({
               onClick={onOpenEmergency}
               className="hidden sm:inline-flex px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-sm items-center gap-1.5"
             >
-              <span>108 Hotline</span>
+              <span>{t('hotline_108')}</span>
             </button>
           </div>
 
@@ -729,9 +748,9 @@ export function HomePage({
           <button
             type="button"
             onClick={() => setShowDemoProfiles(prev => !prev)}
-            className="text-xs text-slate-400 hover:text-slate-600 font-semibold underline decoration-dotted"
+            className="text-xs text-slate-400 hover:text-slate-600 font-semibold underline decoration-dotted cursor-pointer"
           >
-            {showDemoProfiles ? '🧪 Hide Clinical Demo Profiles (AV-8842 / AV-7721)' : '🧪 Switch to Tester Mode (Show Clinical Personas)'}
+            {showDemoProfiles ? t('hide_clinical_profiles') : t('switch_to_tester_mode')}
           </button>
         </div>
       )}
@@ -758,10 +777,10 @@ export function HomePage({
                 </div>
                 <div>
                   <h3 className="text-base font-black text-slate-900 leading-tight">
-                    Recover Existing Vault
+                    {t('recover_existing_vault_title')}
                   </h3>
                   <span className="text-[11px] text-slate-500">
-                    Restore a previously registered vault to this device
+                    {t('recover_existing_vault_desc')}
                   </span>
                 </div>
               </div>
@@ -789,12 +808,12 @@ export function HomePage({
             {recoveryStep === 'phone' && (
               <form onSubmit={handleSearchVaultForRecovery} className="py-4 space-y-4">
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Enter the <strong>Primary Mobile Number</strong> or emergency contact number you provided when creating your vault.
+                  {t('enter_primary_mobile_desc')}
                 </p>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Registered Mobile Number
+                    {t('registered_mobile_number')}
                   </label>
                   <input
                     type="tel"
@@ -813,14 +832,14 @@ export function HomePage({
                     onClick={() => setShowRecoveryModal(false)}
                     className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
                   >
-                    Cancel
+                    {t('cancel_btn')}
                   </button>
                   <button
                     type="submit"
                     disabled={recoveryLoading}
                     className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-md shadow-indigo-200 disabled:opacity-50 cursor-pointer active:scale-95 transition-all"
                   >
-                    {recoveryLoading ? 'Searching...' : 'Find My Vault →'}
+                    {recoveryLoading ? t('searching_vault') : t('find_my_vault_btn')}
                   </button>
                 </div>
               </form>
@@ -831,7 +850,7 @@ export function HomePage({
               <form onSubmit={handleConfirmHomeRecovery} className="py-4 space-y-4">
                 <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs space-y-1">
                   <div className="flex justify-between items-center text-emerald-900 font-bold">
-                    <span>Vault ID: {recoveryMatch.vaultId}</span>
+                    <span>{t('vault_id_label')}: {recoveryMatch.vaultId}</span>
                     <span className="text-red-600">{recoveryMatch.bloodGroup}</span>
                   </div>
                   <div className="text-emerald-800">
@@ -840,25 +859,25 @@ export function HomePage({
                 </div>
 
                 <p className="text-xs text-slate-600">
-                  Enter the 6-digit OTP code sent to <strong>{recoveryMatch.maskedPhone}</strong> to verify authorization.
+                  {t('verify_otp_authorization_desc')}
                 </p>
 
                 {recoveryOtpDebug && (
                   <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono flex items-center justify-between">
-                    <span>Demo SMS Code: <strong>{recoveryOtpDebug}</strong></span>
+                    <span>{t('demo_sms_code')}: <strong>{recoveryOtpDebug}</strong></span>
                     <button
                       type="button"
                       onClick={() => setRecoveryOtp(recoveryOtpDebug)}
                       className="text-[11px] bg-amber-200 hover:bg-amber-300 px-2 py-0.5 rounded font-bold cursor-pointer"
                     >
-                      Auto-fill
+                      {t('auto_fill')}
                     </button>
                   </div>
                 )}
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Enter 6-Digit OTP Code
+                    {t('verify_phone_prompt')}
                   </label>
                   <input
                     type="text"
@@ -882,7 +901,7 @@ export function HomePage({
                     }}
                     className="flex-1 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
                   >
-                    Back
+                    {t('back_btn')}
                   </button>
 
                   <button
@@ -890,7 +909,7 @@ export function HomePage({
                     disabled={recoveryLoading}
                     className="flex-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-xs text-white shadow-md shadow-indigo-200 disabled:opacity-50 transition-all active:scale-95 cursor-pointer"
                   >
-                    {recoveryLoading ? 'Verifying...' : 'Verify & Restore Vault'}
+                    {recoveryLoading ? t('verifying_otp') : t('confirm_and_restore_vault')}
                   </button>
                 </div>
               </form>

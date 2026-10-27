@@ -14,6 +14,7 @@ export function LanguageProvider({ children }) {
 
   const [availableVoices, setAvailableVoices] = useState([]);
   const hasAnnouncedInitialRef = useRef(false);
+  const audioRef = useRef(null);
 
   // Initialize and listen for available system voices
   useEffect(() => {
@@ -59,26 +60,29 @@ export function LanguageProvider({ children }) {
    * Selects best available system voice for the chosen language
    */
   const findBestVoice = (targetLang) => {
-    if (!availableVoices.length) return null;
+    const voices = availableVoices.length > 0 
+      ? availableVoices 
+      : (typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : []);
+    if (!voices || !voices.length) return null;
 
     const langTagMap = {
-      en: 'en',
-      hi: 'hi',
-      kn: 'kn',
-      ta: 'ta',
-      te: 'te',
-      bn: 'bn',
-      mr: 'mr'
+      en: ['en'],
+      hi: ['hi', 'hin'],
+      kn: ['kn', 'kan'],
+      ta: ['ta', 'tam'],
+      te: ['te', 'tel'],
+      bn: ['bn', 'ben'],
+      mr: ['mr', 'mar']
     };
-    const prefix = langTagMap[targetLang] || 'en';
+    const prefixes = langTagMap[targetLang] || ['en'];
 
-    // 1. Direct match on BCP-47 tag (e.g. hi-IN, ta-IN, kn-IN)
-    let match = availableVoices.find(v => {
+    // 1. Direct match on BCP-47 tag (e.g. te-IN, te_IN, tel-IN, te)
+    let match = voices.find(v => {
       const vLang = v.lang.toLowerCase().replace('_', '-');
-      return vLang.startsWith(`${prefix}-`) || vLang === prefix;
+      return prefixes.some(p => vLang === p || vLang.startsWith(`${p}-`));
     });
 
-    // 2. Fallback to voice name match (e.g. Google हिन्दी, Microsoft Heera, Tamil, Telugu)
+    // 2. Fallback to voice name match
     if (!match) {
       const nameKeywords = {
         hi: ['hindi', 'हिन्दी', 'heera', 'kalpana', 'madhur', 'swara'],
@@ -87,57 +91,86 @@ export function LanguageProvider({ children }) {
         te: ['telugu', 'తెలుగు', 'mohan', 'shruti'],
         bn: ['bengali', 'bangla', 'বাংলা', 'bashkar', 'tanishaa'],
         mr: ['marathi', 'मराठी', 'aarohi', 'manohar'],
-        en: ['india', 'indian', 'ravi', 'heera', 'neerja', 'en-in']
+        en: ['india', 'indian', 'ravi', 'heera', 'neerja', 'david', 'zira', 'mark', 'google us english', 'en-in', 'en-us']
       };
       const keys = nameKeywords[targetLang] || [];
-      match = availableVoices.find(v => {
+      match = voices.find(v => {
         const vName = v.name.toLowerCase();
         return keys.some(k => vName.includes(k));
       });
     }
 
-    // 3. Fallback to general Indian English voice if specific Indic engine not installed
-    if (!match && targetLang !== 'en') {
-      match = availableVoices.find(v => v.lang.toLowerCase().includes('en-in') || v.name.toLowerCase().includes('india'));
-    }
-
+    // Crucial: NEVER fall back to an English voice for Indic languages!
     return match || null;
   };
 
   /**
-   * Voice Readout: Speaks text aloud using Web Speech API in the target language
+   * Voice Readout: Speaks text aloud in the target language.
+   * If local OS voice pack is installed, uses Web Speech API.
+   * If local Indic voice is missing (common on Windows), uses streaming Indic TTS audio for authentic native pronunciation.
    */
   const speakText = (text, explicitLang = null) => {
-    if (!('speechSynthesis' in window)) {
-      console.warn('SpeechSynthesis is not supported in this browser.');
-      return;
-    }
-
     if (!text) return;
-
-    window.speechSynthesis.cancel(); // Cancel any ongoing speech immediately
-    const utterance = new SpeechSynthesisUtterance(text);
-    
     const targetLang = explicitLang || lang;
-    const langTagMap = {
-      en: 'en-IN',
-      hi: 'hi-IN',
-      kn: 'kn-IN',
-      ta: 'ta-IN',
-      te: 'te-IN',
-      bn: 'bn-IN',
-      mr: 'mr-IN'
-    };
-    utterance.lang = langTagMap[targetLang] || 'en-IN';
-    utterance.rate = 0.88; // Slightly measured rate for high-stress clarity
-    utterance.pitch = 1.0;
+
+    // Immediately cancel any active speech or playing audio
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
 
     const matchedVoice = findBestVoice(targetLang);
-    if (matchedVoice) {
-      utterance.voice = matchedVoice;
+
+    // If native system voice found for targetLang OR targetLang is English:
+    if (matchedVoice || targetLang === 'en') {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        const langTagMap = {
+          en: 'en-IN',
+          hi: 'hi-IN',
+          kn: 'kn-IN',
+          ta: 'ta-IN',
+          te: 'te-IN',
+          bn: 'bn-IN',
+          mr: 'mr-IN'
+        };
+        utterance.lang = langTagMap[targetLang] || 'en-IN';
+        utterance.rate = 0.88;
+        utterance.pitch = 1.0;
+        if (matchedVoice) {
+          utterance.voice = matchedVoice;
+        }
+        window.speechSynthesis.speak(utterance);
+        return;
+      }
     }
 
-    window.speechSynthesis.speak(utterance);
+    // For non-English languages when OS has no native Indic voice installed (common on Windows desktop):
+    // Use Google TTS audio streaming for authentic native Indic voice playback
+    try {
+      const cleanText = text.length > 190 ? text.slice(0, 185) + '...' : text;
+      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${targetLang}&client=tw-ob`;
+      const audio = new Audio(ttsUrl);
+      audioRef.current = audio;
+      audio.play().catch(err => {
+        console.warn('TTS Audio playback blocked or network unavailable, falling back to Web Speech API:', err);
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = targetLang + '-IN';
+          window.speechSynthesis.speak(utterance);
+        }
+      });
+    } catch (err) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = targetLang + '-IN';
+        window.speechSynthesis.speak(utterance);
+      }
+    }
   };
 
   /**
@@ -170,8 +203,13 @@ export function LanguageProvider({ children }) {
   };
 
   const stopSpeaking = () => {
-    if ('speechSynthesis' in window) {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
   };
 
