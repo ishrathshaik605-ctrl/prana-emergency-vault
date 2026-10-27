@@ -24,7 +24,7 @@ export function HomePage({
   onOpenDashboard,
   currentVaultId = 'AV-8842'
 }) {
-  const { t, speakText, lang, formatMedicalSpeech } = useLanguage();
+  const { t, speakText, lang, formatMedicalSpeech, translateName, translateRelationship } = useLanguage();
   const [manualId, setManualId] = useState('');
   const [userVaults, setUserVaults] = useState(getUserVaults());
   const [showDemoProfiles, setShowDemoProfiles] = useState(false);
@@ -226,7 +226,7 @@ export function HomePage({
                   </span>
                 </div>
                 <h3 className="text-2xl font-black text-white mt-1">
-                  {activeVault.owner_name}
+                  {translateName(activeVault.owner_name)}
                 </h3>
               </div>
             </div>
@@ -270,7 +270,7 @@ export function HomePage({
               <span className="text-slate-400 block font-bold text-[10px] uppercase">{t('emergency_contacts')}</span>
               <span className="text-white font-semibold mt-0.5 block">
                 {activeVault.emergency_contacts?.length 
-                  ? `${activeVault.emergency_contacts[0].name} (${activeVault.emergency_contacts[0].phone})` 
+                  ? `${translateName(activeVault.emergency_contacts[0].name)} (${activeVault.emergency_contacts[0].phone})` 
                   : t('guardians_configured')}
               </span>
             </div>
@@ -347,7 +347,7 @@ export function HomePage({
                       : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
                 >
-                  {v.owner_name} ({v.blood_group})
+                  {translateName(v.owner_name)} ({v.blood_group})
                 </button>
               ))}
               </div>
@@ -544,7 +544,7 @@ export function HomePage({
                     {t('elderly_persona_badge')}
                   </span>
                   <h4 className="text-xl font-black text-slate-900 mt-1.5 group-hover:text-amber-700 transition-colors">
-                    Ramesh Patel (68M)
+                    {translateName('Ramesh Patel')} (68{t('male_initial')})
                   </h4>
                   <p className="text-xs text-slate-500">Vault ID: <strong className="font-mono text-slate-900">AV-8842</strong></p>
                 </div>
@@ -557,7 +557,7 @@ export function HomePage({
               <div className="mt-3 space-y-1 text-xs text-slate-700">
                 <p>⚠️ <strong>Severe Penicillin Allergy</strong> (Anaphylaxis shock risk)</p>
                 <p>❤️ <strong>Pacemaker Implanted</strong> (St. Jude Medical 2021)</p>
-                <p>📱 Guardian: Suresh Patel (Son, +91 98250 99991)</p>
+                <p>📱 {translateRelationship('Guardian')}: {translateName('Suresh Patel')} ({translateRelationship('Son')}, +91 98250 99991)</p>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-700">
@@ -577,7 +577,7 @@ export function HomePage({
                     {t('urban_persona_badge')}
                   </span>
                   <h4 className="text-xl font-black text-slate-900 mt-1.5 group-hover:text-blue-700 transition-colors">
-                    Priya Sharma (29F)
+                    {translateName('Priya Sharma')} (29{t('female_initial')})
                   </h4>
                   <p className="text-xs text-slate-500">{t('vault_id_label')}: <strong className="font-mono text-slate-900">AV-7721</strong></p>
                 </div>
@@ -590,7 +590,7 @@ export function HomePage({
               <div className="mt-3 space-y-1 text-xs text-slate-700">
                 <p>⚠️ <strong>Sulfa Drugs Allergy</strong> & Mild Asthma</p>
                 <p>🏥 Hospital: Fortis Bannerghatta Road, Bengaluru</p>
-                <p>📱 Guardian: Rahul Sharma (Brother, +91 98450 99991)</p>
+                <p>📱 {translateRelationship('Guardian')}: {translateName('Rahul Sharma')} ({translateRelationship('Brother')}, +91 98450 99991)</p>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700">
@@ -663,7 +663,7 @@ export function HomePage({
                     onClick={() => setManualId(uv.id)}
                     className="font-mono font-bold text-emerald-700 hover:text-emerald-900 px-2 py-1 bg-emerald-50 border border-emerald-200 rounded-lg"
                   >
-                    {uv.id} ({uv.owner_name.split(' ')[0]})
+                    {uv.id} ({translateName(uv.owner_name).split(' ')[0]})
                   </button>
                 ))
               ) : (

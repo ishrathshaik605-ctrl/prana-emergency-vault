@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
-  const { t, speakText, lang } = useLanguage();
+  const { t, speakText, lang, translateName } = useLanguage();
   const [tier0Data, setTier0Data] = useState(null);
   const [elevatedData, setElevatedData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -264,11 +264,11 @@ export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
           }`}>
             <div>
               <span className="text-[10px] uppercase font-black tracking-widest bg-white/20 px-2 py-0.5 rounded-full inline-block mb-1">
-                ACCESS ELEVATED: {elevatedData.access_tier}
+                {t('access_elevated')}: {elevatedData.access_tier}
               </span>
-              <h2 className="text-2xl font-black">{elevatedData.owner_name}</h2>
+              <h2 className="text-2xl font-black">{translateName(elevatedData.owner_name)}</h2>
               <p className="text-xs text-slate-100">
-                {t('blood_group')}: <strong>{elevatedData.blood_group}</strong> • Age: {elevatedData.age || 'Adult'}
+                {t('blood_group')}: <strong>{elevatedData.blood_group}</strong> • {t('age_label')}: {elevatedData.age || t('adult_label')}
               </p>
             </div>
 

@@ -6,12 +6,12 @@ import {
 } from 'lucide-react';
 
 export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
-  const { t, speakText, lang, formatMedicalSpeech } = useLanguage();
+  const { t, speakText, lang, formatMedicalSpeech, translateName, translateRelationship } = useLanguage();
 
   if (!data) return null;
 
   const handleVoiceReadout = () => {
-    const speech = formatMedicalSpeech ? formatMedicalSpeech(data) : (data.owner_name + ', ' + data.blood_group);
+    const speech = formatMedicalSpeech ? formatMedicalSpeech(data) : (translateName(data.owner_name) + ', ' + data.blood_group);
     speakText(speech);
   };
 
@@ -55,7 +55,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
               {t('tier0_title')}
             </span>
             <h2 className="text-2xl font-black tracking-tight leading-none">
-              {data.owner_name}
+              {translateName(data.owner_name)}
             </h2>
             <span className="text-xs text-red-100 font-medium">
               {t('vault_id_label')}: {data.vault_id} • {t('age_label')}: {data.age_group || t('adult_label')} ({data.gender})
@@ -165,10 +165,10 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
               >
                 <div>
                   <div className="text-xs font-bold text-slate-400">
-                    {t('priority_prefix')} #{contact.priority} • {contact.relationship}
+                    {t('priority_prefix')} #{contact.priority} • {translateRelationship(contact.relationship)}
                   </div>
                   <div className="text-sm font-extrabold text-slate-900">
-                    {contact.name}
+                    {translateName(contact.name)}
                   </div>
                   <div className="text-xs font-semibold text-slate-600">
                     {contact.phone}

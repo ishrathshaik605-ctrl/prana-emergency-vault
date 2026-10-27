@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 export function LiveAlertToast({ onOpenAudit }) {
   const [alerts, setAlerts] = useState([]);
-  const { speakText } = useLanguage();
+  const { speakText, translateName } = useLanguage();
 
   useEffect(() => {
     let eventSource;
@@ -85,10 +85,10 @@ export function LiveAlertToast({ onOpenAudit }) {
             {alert.type === 'EMERGENCY_ACCESS' ? (
               <div>
                 <p className="font-extrabold text-sm text-yellow-300">
-                  {alert.data.tier} Access for {alert.data.ownerName}
+                  {alert.data.tier} Access for {translateName(alert.data.ownerName)}
                 </p>
                 <p className="mt-1 text-slate-200">
-                  Opened by: <strong>{alert.data.actorName}</strong> ({alert.data.actorOrg}).
+                  Opened by: <strong>{translateName(alert.data.actorName)}</strong> ({alert.data.actorOrg}).
                 </p>
                 <p className="text-[11px] text-red-200 mt-1">
                   Reason: "{alert.data.reason}"

@@ -23,7 +23,7 @@ export function DashboardPage({
   autoOpenEdit = false,
   onClearAutoEdit
 }) {
-  const { t } = useLanguage();
+  const { t, translateName, translateRelationship } = useLanguage();
   const [vault, setVault] = useState(null);
   const [loading, setLoading] = useState(true);
   const [newMember, setNewMember] = useState({ name: '', phone: '', rel: 'Family Member' });
@@ -399,7 +399,7 @@ export function DashboardPage({
           <button onClick={onBack} className="text-xs font-bold text-slate-500 hover:text-slate-900 mb-2 block">
             {t('back_to_home')}
           </button>
-          <h2 className="text-2xl font-black text-slate-900">{vault.owner_name} - {t('app_name')}</h2>
+          <h2 className="text-2xl font-black text-slate-900">{translateName(vault.owner_name)} - {t('app_name')}</h2>
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <span className="text-xs text-slate-500 font-medium">
               Vault ID: <strong className="font-mono text-slate-900">{vault.id}</strong> • {t('blood_group')}: <strong className="text-red-600 font-bold">{vault.blood_group}</strong>
@@ -486,7 +486,7 @@ export function DashboardPage({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-black text-white">{m.name}</span>
+                      <span className="text-sm font-black text-white">{translateName(m.name)}</span>
                       <span className="text-[10px] font-mono bg-slate-900 text-indigo-300 px-2 py-0.5 rounded border border-indigo-900/60">
                         {m.id}
                       </span>

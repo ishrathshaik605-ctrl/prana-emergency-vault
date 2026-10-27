@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { translations } from '../i18n/translations';
+import { translateName as baseTranslateName, translateRelationship as baseTranslateRelationship } from '../utils/nameTranslator';
 
 const LanguageContext = createContext();
 
@@ -178,15 +179,31 @@ export function LanguageProvider({ children }) {
   };
 
   /**
+   * Translates given name / owner name to current selected language
+   */
+  const translateName = (name, explicitLang = null) => {
+    return baseTranslateName(name, explicitLang || lang);
+  };
+
+  /**
+   * Translates relationship descriptions like "Son", "Brother", etc. to current language
+   */
+  const translateRelationship = (rel, explicitLang = null) => {
+    return baseTranslateRelationship(rel, explicitLang || lang);
+  };
+
+  /**
    * Generates localized speech text for patient's medical lifesaver card
    */
   const formatMedicalSpeech = (data) => {
     if (!data) return '';
-    const name = data.owner_name || '';
+    const name = translateName(data.owner_name || '', lang);
     const bg = data.blood_group || '';
     const allergies = data.critical_allergies || '';
     const conditions = data.critical_conditions || '';
-    const contact = data.emergency_contacts?.[0] ? `${data.emergency_contacts[0].name}, ${data.emergency_contacts[0].phone}` : '';
+    const contactName = data.emergency_contacts?.[0] ? translateName(data.emergency_contacts[0].name, lang) : '';
+    const contactPhone = data.emergency_contacts?.[0]?.phone || '';
+    const contact = contactName ? `${contactName}, ${contactPhone}` : '';
 
     switch (lang) {
       case 'hi':
@@ -234,6 +251,8 @@ export function LanguageProvider({ children }) {
       lang,
       setLang: changeLanguage,
       t,
+      translateName,
+      translateRelationship,
       highContrast,
       setHighContrast,
       speakText,

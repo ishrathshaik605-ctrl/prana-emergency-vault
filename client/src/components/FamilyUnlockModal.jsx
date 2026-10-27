@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { UserCheck, ShieldCheck, KeyRound, X, ArrowRight, AlertCircle, Sparkles, Smartphone } from 'lucide-react';
 
 export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaultPhone = '' }) {
-  const { t } = useLanguage();
+  const { t, translateName } = useLanguage();
   const [phone, setPhone] = useState(defaultPhone || '');
   const [otpCode, setOtpCode] = useState('');
   const [step, setStep] = useState('phone'); // 'phone' | 'otp'
@@ -164,7 +164,7 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div>
               <div className="text-xs text-slate-600 mb-1 font-semibold">
-                {t('verifying_label')} <span className="font-bold text-slate-900">{recipientName}</span> ({phone}):
+                {t('verifying_label')} <span className="font-bold text-slate-900">{translateName(recipientName)}</span> ({phone}):
               </div>
 
               {debugOtp && (

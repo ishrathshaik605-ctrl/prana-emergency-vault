@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { Phone, Ambulance, ShieldAlert, HeartPulse, X, Volume2 } from 'lucide-react';
 
 export function EmergencyModeModal({ isOpen, onClose, onShowMedical, topContact, defaultVaultId = 'AV-8842' }) {
-  const { t, speakText, lang } = useLanguage();
+  const { t, speakText, lang, translateName, translateRelationship } = useLanguage();
 
   useEffect(() => {
     if (isOpen) {
@@ -98,7 +98,7 @@ export function EmergencyModeModal({ isOpen, onClose, onShowMedical, topContact,
                   {t('call_family')}
                 </div>
                 <div className="text-sm font-semibold text-emerald-100">
-                  {topContact ? `${topContact.name} (${topContact.relationship})` : t('primary_guardian_default')}
+                  {topContact ? `${translateName(topContact.name)} (${translateRelationship(topContact.relationship)})` : t('primary_guardian_default')}
                 </div>
               </div>
             </div>

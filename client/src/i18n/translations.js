@@ -247,6 +247,9 @@ export const translations = {
     policy_number: 'Policy Number',
     cashless_helpline: 'TPA / Cashless Helpline',
     note: 'Note',
+    guardian_label: 'Guardian',
+    male_initial: 'M',
+    female_initial: 'F',
 
     // Voice Interaction Specific Translations
     voice_emergency_welcome: 'Emergency mode active. Press red button to call ambulance 108, green button to call family, blue button to view medical info.',
@@ -510,6 +513,9 @@ export const translations = {
     policy_number: 'पॉलिसी संख्या',
     cashless_helpline: 'टीपीए / कैशलेस हेल्पलाइन',
     note: 'नोट',
+    guardian_label: 'अभिभावक',
+    male_initial: 'पु',
+    female_initial: 'म',
 
     voice_emergency_welcome: 'आपातकालीन मोड सक्रिय है। लाल बटन से एम्बुलेंस 108 को कॉल करें, हरे बटन से परिवार को कॉल करें, और नीले बटन से चिकित्सा विवरण देखें।',
     voice_buttons_instruction: 'लाल बटन एम्बुलेंस 108। हरा बटन परिवार। नीला बटन चिकित्सा विवरण।',
@@ -772,6 +778,9 @@ export const translations = {
     policy_number: 'ಪಾಲಿಸಿ ಸಂಖ್ಯೆ',
     cashless_helpline: 'ನಗದುರಹಿತ ಸಹಾಯವಾಣಿ',
     note: 'ಟಿಪ್ಪಣಿ',
+    guardian_label: 'ಪೋಷಕರು',
+    male_initial: 'ಪು',
+    female_initial: 'ಮ',
 
     voice_emergency_welcome: 'ತುರ್ತು ಮೋಡ್ ಸಕ್ರಿಯವಾಗಿದೆ. ಆಂಬ್ಯುಲೆನ್ಸ್ 108 ಕರೆ ಮಾಡಲು ಕೆಂಪು ಬಟನ್, ಕುಟುಂಬಕ್ಕೆ ಕರೆ ಮಾಡಲು ಹಸಿರು ಬಟನ್, ಮತ್ತು ವೈದ್ಯಕೀಯ ಮಾಹಿತಿ ನೋಡಲು ನೀಲಿ ಬಟನ್ ಒತ್ತಿ.',
     voice_buttons_instruction: 'ಕೆಂಪು ಬಟನ್ ಆಂಬ್ಯುಲೆನ್ಸ್ 108. ಹಸಿರು ಬಟನ್ ಕುಟುಂಬ. ನೀಲಿ ಬಟನ್ ವೈದ್ಯಕೀಯ ವಿವರ.',
@@ -1034,6 +1043,9 @@ export const translations = {
     policy_number: 'பாலிசி எண்',
     cashless_helpline: 'பணமில்லா உதவி எண்',
     note: 'குறிப்பு',
+    guardian_label: 'பாதுகாவலர்',
+    male_initial: 'ஆ',
+    female_initial: 'பெ',
 
     voice_emergency_welcome: 'அவசர நிலை இயக்கப்பட்டது. ஆம்புலன்ஸ் 108-ஐ அழைக்க சிவப்பு பொத்தானையும், குடும்பத்தை அழைக்க பச்சை பொத்தானையும், மற்றும் மருத்துவ விவரங்களுக்கு நீல பொத்தானையும் அழுத்தவும்.',
     voice_buttons_instruction: 'சிவப்பு பொத்தான் ஆம்புலன்ஸ் 108. பச்சை பொத்தான் குடும்பம். நீல பொத்தான் மருத்துவ விவரம்.',
@@ -1296,6 +1308,9 @@ export const translations = {
     policy_number: 'పాలసీ నంబర్',
     cashless_helpline: 'నగదు రహిత హెల్ప్‌లైన్',
     note: 'గమనిక',
+    guardian_label: 'సంరక్షకుడు',
+    male_initial: 'పు',
+    female_initial: 'మ',
 
     voice_emergency_welcome: 'అత్యవసర మోడ్ ప్రారంభమైంది. అంబులెన్స్ 108 కి కాల్ చేయడానికి ఎరుపు బటన్, కుటుంబానికి కాల్ చేయడానికి ఆకుపచ్చ బటన్, మరియు వైద్య సమాచారం కోసం నీలం బటన్ నొక్కండి.',
     voice_buttons_instruction: 'ఎరుపు బటన్ అంబులెన్స్ 108. ఆకుపచ్చ బటన్ కుటుంబం. నీలం బటన్ వైద్య సమాచారం.',
@@ -1558,6 +1573,9 @@ export const translations = {
     policy_number: 'পলিসি নম্বর',
     cashless_helpline: 'ক্যাশলেস হেল্পলাইন',
     note: 'নোট',
+    guardian_label: 'অভিভাবক',
+    male_initial: 'পু',
+    female_initial: 'ম',
 
     voice_emergency_welcome: 'জরুরি মোড সক্রিয় হয়েছে। অ্যাম্বুলেন্স ১০৮ ডাকতে লাল বোতাম, পরিবারকে কল করতে সবুজ বোতাম এবং চিকিৎসা তথ্য দেখতে নীল বোতাম টিপুন।',
     voice_buttons_instruction: 'লাল বোতাম অ্যাম্বুলেন্স ১০৮। সবুজ বোতাম পরিবার। নীল বোতাম চিকিৎসা বিবরণ।',
@@ -1820,6 +1838,9 @@ export const translations = {
     policy_number: 'पॉलिसी क्रमांक',
     cashless_helpline: 'कॅशलेस हेल्पलाइन',
     note: 'टीप',
+    guardian_label: 'पालक',
+    male_initial: 'पु',
+    female_initial: 'म',
 
     voice_emergency_welcome: 'आपत्कालीन मोड सक्रिय आहे. रुग्णवाहिका 108 ला कॉल करण्यासाठी लाल बटण, कुटुंबाला कॉल करण्यासाठी हिरवे बटण आणि वैद्यकीय माहिती पाहण्यासाठी निळे बटण दाबा.',
     voice_buttons_instruction: 'लाल बटण रुग्णवाहिका 108. हिरवे बटण कुटुंब. निळे बटण वैद्यकीय माहिती.',

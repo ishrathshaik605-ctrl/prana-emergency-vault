@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import QRCode from 'qrcode';
+import { useLanguage } from '../context/LanguageContext';
 import { Printer, ShieldAlert, Phone, HeartPulse, X, Download, Smartphone, ArrowLeft } from 'lucide-react';
 
 export function PrintableCard({ isOpen, vault, onClose, onBackToVault }) {
+  const { t, translateName, translateRelationship } = useLanguage();
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [activeTab, setActiveTab] = useState('wallet'); // 'wallet' | 'sticker' | 'wallpaper'
 
@@ -193,7 +195,7 @@ export function PrintableCard({ isOpen, vault, onClose, onBackToVault }) {
 
                 <div className="flex items-center justify-between gap-3 my-2">
                   <div>
-                    <h4 className="text-xl font-black tracking-tight">{vault.owner_name}</h4>
+                    <h4 className="text-xl font-black tracking-tight">{translateName(vault.owner_name)}</h4>
                     <p className="text-xs text-red-100">Vault ID: {vault.id}</p>
                     <p className="text-xs font-semibold text-yellow-200 mt-1 line-clamp-1">
                       ⚠️ {vault.allergies || 'Severe Drug Allergy'}
@@ -223,7 +225,7 @@ export function PrintableCard({ isOpen, vault, onClose, onBackToVault }) {
                   </div>
                   {vault.emergency_contacts?.slice(0, 2).map((c, i) => (
                     <div key={i} className="text-[11px] text-slate-700">
-                      • {c.name} ({c.relationship}): <strong className="font-mono">{c.phone}</strong>
+                      • {translateName(c.name)} ({translateRelationship(c.relationship)}): <strong className="font-mono">{c.phone}</strong>
                     </div>
                   ))}
                   <div className="text-[10px] text-slate-500 pt-1">
@@ -252,7 +254,7 @@ export function PrintableCard({ isOpen, vault, onClose, onBackToVault }) {
                   HELMET / BIKE EMERGENCY STICKER
                 </span>
               </div>
-              <h4 className="text-2xl font-black uppercase tracking-tight">{vault.owner_name}</h4>
+              <h4 className="text-2xl font-black uppercase tracking-tight">{translateName(vault.owner_name)}</h4>
               <div className="text-lg font-black my-1">
                 BLOOD: <span className="bg-red-600 text-white px-2 py-0.5 rounded-lg">{vault.blood_group}</span>
               </div>
@@ -278,7 +280,7 @@ export function PrintableCard({ isOpen, vault, onClose, onBackToVault }) {
                 <span className="text-[10px] uppercase font-bold text-red-400 tracking-wider">
                   ICE: IN CASE OF EMERGENCY
                 </span>
-                <h5 className="text-sm font-black mt-0.5">{vault.owner_name}</h5>
+                <h5 className="text-sm font-black mt-0.5">{translateName(vault.owner_name)}</h5>
                 <div className="text-xs font-black text-yellow-300 mt-0.5">
                   Blood Group: {vault.blood_group}
                 </div>
