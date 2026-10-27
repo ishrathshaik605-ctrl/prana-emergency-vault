@@ -75,7 +75,7 @@ export function EmergencyModeModal({ isOpen, onClose, onShowMedical, topContact,
                   {t('call_ambulance')}
                 </div>
                 <div className="text-sm font-semibold text-red-100">
-                  National Medical Emergency (Free)
+                  {t('ambulance_subtext')}
                 </div>
               </div>
             </div>
@@ -98,12 +98,12 @@ export function EmergencyModeModal({ isOpen, onClose, onShowMedical, topContact,
                   {t('call_family')}
                 </div>
                 <div className="text-sm font-semibold text-emerald-100">
-                  {topContact ? `${topContact.name} (${topContact.relationship})` : 'Primary Guardian (Suresh Patel)'}
+                  {topContact ? `${topContact.name} (${topContact.relationship})` : t('primary_guardian_default')}
                 </div>
               </div>
             </div>
             <div className="text-sm font-bold bg-white text-emerald-700 px-3 py-1.5 rounded-xl shadow-inner shrink-0">
-              CALL NOW
+              {t('call_now_btn')}
             </div>
           </a>
 
@@ -124,21 +124,21 @@ export function EmergencyModeModal({ isOpen, onClose, onShowMedical, topContact,
                   {t('show_medical')}
                 </div>
                 <div className="text-sm font-semibold text-blue-100">
-                  Blood Group, Allergies, Pacemaker & Lifesaver Card
+                  {t('medical_info_subtext')}
                 </div>
               </div>
             </div>
             <div className="text-sm font-bold bg-white text-blue-700 px-3 py-1.5 rounded-xl shadow-inner shrink-0">
-              VIEW
+              {t('view_btn')}
             </div>
           </button>
         </div>
 
         {/* Secondary Call 112 option */}
         <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span>Other Emergency:</span>
+          <span>{t('other_emergency')}</span>
           <a href="tel:112" className="text-slate-800 font-bold hover:underline">
-            All-in-One Helpline: 112
+            {t('all_in_one_helpline')}: 112
           </a>
         </div>
       </div>

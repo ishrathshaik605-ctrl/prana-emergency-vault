@@ -247,7 +247,7 @@ export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
               title="Lock and re-encrypt vault immediately"
             >
               <Lock className="w-3.5 h-3.5 text-yellow-400" />
-              <span>Emergency Completed (Lock Vault)</span>
+              <span>{t('emergency_completed_lock')}</span>
             </button>
           )}
         </div>
@@ -392,10 +392,10 @@ export function EmergencyPortal({ vaultId, onBack, onOpenDashboard }) {
                 className="w-full min-h-[50px] rounded-2xl bg-slate-900 hover:bg-black active:scale-98 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all"
               >
                 <Lock className="w-4 h-4 text-emerald-400" />
-                <span>EMERGENCY COMPLETED — LOCK VAULT NOW</span>
+                <span>{t('emergency_completed_lock')}</span>
               </button>
               <p className="text-[11px] text-center text-slate-500 mt-1.5">
-                Revokes active session tokens and returns vault to Tier 0 zero-leak state.
+                {t('emergency_completed_subtext')}
               </p>
             </div>
           </div>

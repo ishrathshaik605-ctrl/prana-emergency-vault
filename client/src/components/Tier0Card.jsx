@@ -26,7 +26,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
         >
           <Phone className="w-4 h-4 animate-pulse" />
           <div className="leading-tight text-left">
-            <span className="block text-[9px] uppercase tracking-wider text-red-200">1-Tap Rescue</span>
+            <span className="block text-[9px] uppercase tracking-wider text-red-200">{t('one_tap_rescue')}</span>
             <span>{t('call_ambulance') || 'Call Ambulance 108'}</span>
           </div>
         </a>
@@ -38,7 +38,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
         >
           <Phone className="w-4 h-4 text-cyan-400" />
           <div className="leading-tight text-left">
-            <span className="block text-[9px] uppercase tracking-wider text-slate-400">National ER</span>
+            <span className="block text-[9px] uppercase tracking-wider text-slate-400">{t('national_er')}</span>
             <span>{t('call_police') || 'Call Police 112'}</span>
           </div>
         </a>
@@ -58,7 +58,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
               {data.owner_name}
             </h2>
             <span className="text-xs text-red-100 font-medium">
-              Vault ID: {data.vault_id} • Age: {data.age_group || 'Adult'} ({data.gender})
+              {t('vault_id_label')}: {data.vault_id} • {t('age_label')}: {data.age_group || t('adult_label')} ({data.gender})
             </span>
           </div>
         </div>
@@ -96,7 +96,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
               {t('critical_allergies')}
             </h3>
             <p className="text-base font-bold text-amber-950 mt-0.5">
-              {data.critical_allergies || 'No known severe drug allergies reported'}
+              {data.critical_allergies || t('none_reported')}
             </p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
               {t('conditions')}
             </h4>
             <p className="text-sm font-bold text-slate-900">
-              {data.critical_conditions || 'None reported'}
+              {data.critical_conditions || t('none_reported')}
             </p>
           </div>
 
@@ -127,7 +127,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
         {data.emergency_instructions_summary && (
           <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200">
             <h4 className="text-xs font-black uppercase tracking-wider text-blue-800 mb-1">
-              {t('emergency_instructions')} (In Owner's Words)
+              {t('emergency_instructions')} ({t('in_owners_words')})
             </h4>
             <p className="text-sm italic font-semibold text-blue-950">
               "{data.emergency_instructions_summary}"
@@ -154,7 +154,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
         <div>
           <h4 className="text-xs font-black uppercase tracking-wider text-slate-600 mb-3 flex items-center gap-1.5">
             <Phone className="w-4 h-4 text-emerald-600" />
-            <span>{t('emergency_contacts')} (Top Priority)</span>
+            <span>{t('emergency_contacts')} ({t('top_priority')})</span>
           </h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -165,7 +165,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
               >
                 <div>
                   <div className="text-xs font-bold text-slate-400">
-                    Priority #{contact.priority} • {contact.relationship}
+                    {t('priority_prefix')} #{contact.priority} • {contact.relationship}
                   </div>
                   <div className="text-sm font-extrabold text-slate-900">
                     {contact.name}
@@ -180,7 +180,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
                   className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1 shrink-0 shadow-sm shadow-emerald-200"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>Call</span>
+                  <span>{t('call_btn')}</span>
                 </a>
               </div>
             ))}
@@ -191,7 +191,7 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
         <div className="p-4 rounded-2xl bg-slate-100 border border-slate-300 text-xs text-slate-600 flex items-start gap-2.5">
           <Lock className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
           <p>
-            <strong>Controlled Access Notice:</strong> Full medications, insurance policy numbers, home address, and diagnostic reports are encrypted and withheld in Tier 0. Verify identity below to unlock.
+            <strong>{t('controlled_access_notice_title')}:</strong> {t('controlled_access_notice')}
           </p>
         </div>
 
@@ -205,13 +205,13 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
             <div>
               <div className="flex items-center gap-1.5 text-xs text-slate-300 uppercase tracking-wider">
                 <UserCheck className="w-4 h-4 text-emerald-400" />
-                <span>Family Member</span>
+                <span>{t('family_member_tier')}</span>
               </div>
               <div className="text-sm font-extrabold mt-0.5">
                 {t('verified_family_unlock')}
               </div>
               <div className="text-[11px] text-slate-400 font-normal">
-                Quick SMS OTP Verification
+                {t('quick_sms_verification')}
               </div>
             </div>
             <span className="text-lg">→</span>
@@ -225,13 +225,13 @@ export function Tier0Card({ data, onUnlockFamily, onBreakGlass }) {
             <div>
               <div className="flex items-center gap-1.5 text-xs text-red-200 uppercase tracking-wider">
                 <Stethoscope className="w-4 h-4 text-white" />
-                <span>Paramedic / ER Staff</span>
+                <span>{t('paramedic_staff_tier')}</span>
               </div>
               <div className="text-sm font-extrabold mt-0.5">
                 {t('break_glass_btn')}
               </div>
               <div className="text-[11px] text-red-100 font-normal">
-                Time-Limited 30-Min Emergency
+                {t('time_limited_access')}
               </div>
             </div>
             <span className="text-lg">⚡</span>

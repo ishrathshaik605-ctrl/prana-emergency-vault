@@ -150,26 +150,30 @@ export function LanguageProvider({ children }) {
     }
 
     // For non-English languages when OS has no native Indic voice installed (common on Windows desktop):
-    // Use Google TTS audio streaming for authentic native Indic voice playback
+    // Use high-fidelity Indic TTS audio stream (/api/tts proxy with Google TTS fallback)
     try {
       const cleanText = text.length > 190 ? text.slice(0, 185) + '...' : text;
-      const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${targetLang}&client=tw-ob`;
-      const audio = new Audio(ttsUrl);
+      // 1. Try our backend proxy route first
+      const proxyUrl = `/api/tts?q=${encodeURIComponent(cleanText)}&lang=${targetLang}`;
+      const audio = new Audio(proxyUrl);
       audioRef.current = audio;
-      audio.play().catch(err => {
-        console.warn('TTS Audio playback blocked or network unavailable, falling back to Web Speech API:', err);
-        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = targetLang + '-IN';
-          window.speechSynthesis.speak(utterance);
+
+      audio.play().catch((proxyErr) => {
+        console.warn('Backend TTS proxy failed, attempting direct no-referrer TTS stream:', proxyErr);
+        // 2. Direct client fallback with no-referrer
+        try {
+          const directUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${targetLang}&client=tw-ob`;
+          const directAudio = new Audio(directUrl);
+          audioRef.current = directAudio;
+          directAudio.play().catch((directErr) => {
+            console.warn('Direct TTS audio failed:', directErr);
+          });
+        } catch (e) {
+          console.error('Audio TTS initialization error:', e);
         }
       });
     } catch (err) {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = targetLang + '-IN';
-        window.speechSynthesis.speak(utterance);
-      }
+      console.error('Audio TTS error:', err);
     }
   };
 

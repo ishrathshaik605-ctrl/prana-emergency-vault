@@ -120,7 +120,7 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
               {t('verified_family_unlock')}
             </h3>
             <span className="text-xs text-slate-500 font-medium">
-              Tier 1 • Granular Permission Matrix Access
+              {t('tier1_subtitle')}
             </span>
           </div>
         </div>
@@ -147,7 +147,7 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
                 required
               />
               <p className="text-[11px] text-slate-500 mt-1">
-                Must match the registered phone number in this vault's permissions list.
+                {t('phone_match_desc')}
               </p>
             </div>
 
@@ -156,7 +156,7 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
               disabled={loading}
               className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 transition-all disabled:opacity-50"
             >
-              <span>{loading ? 'Sending Verification OTP...' : t('get_otp')}</span>
+              <span>{loading ? t('sending_otp') : t('get_otp')}</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </form>
@@ -164,7 +164,7 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div>
               <div className="text-xs text-slate-600 mb-1 font-semibold">
-                Verifying <span className="font-bold text-slate-900">{recipientName}</span> ({phone}):
+                {t('verifying_label')} <span className="font-bold text-slate-900">{recipientName}</span> ({phone}):
               </div>
 
               {debugOtp && (
@@ -172,7 +172,7 @@ export function FamilyUnlockModal({ isOpen, onClose, vaultId, onUnlocked, defaul
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center gap-1">
                       <Smartphone className="w-3.5 h-3.5 text-amber-700" />
-                      <span>SMS Gateway Simulator</span>
+                      <span>{t('sms_gateway_sim')}</span>
                     </span>
                     <button
                       type="button"

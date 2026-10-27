@@ -81,13 +81,13 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
         <div className="mt-4 p-4 rounded-2xl bg-red-50 border-2 border-red-200 text-xs text-red-900 leading-relaxed space-y-2">
           <div className="flex items-center gap-2 font-black text-red-700 uppercase tracking-wider">
             <AlertTriangle className="w-5 h-5 shrink-0" />
-            <span>Speed vs Security Architectural Trade-Off</span>
+            <span>{t('speed_vs_security')}</span>
           </div>
           <p>
-            To guarantee immediate lifesaver access in acute ER or trauma cases, Break-Glass unlocks clinical data in <strong>under 2 seconds without waiting for family OTP</strong>.
+            {t('speed_tradeoff_desc')}
           </p>
           <p className="font-semibold text-red-950">
-            <strong>Mandatory Accountability:</strong> An automated emergency broadcast (SMS + IVR Call) is dispatched immediately to the patient and all registered family members with your details. Session valid for <strong>30 minutes</strong> and permanently audited.
+            {t('mandatory_accountability_desc')}
           </p>
         </div>
 
@@ -100,20 +100,20 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
         {/* Form Inputs */}
         <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
           <div className="flex items-center justify-between text-xs text-slate-500 pb-0.5">
-            <span className="font-semibold text-slate-600">Enter responder credentials:</span>
+            <span className="font-semibold text-slate-600">{t('enter_responder_credentials')}</span>
             <button
               type="button"
               onClick={handleFillDemo}
               className="text-[11px] font-bold text-red-600 hover:text-red-700 hover:underline flex items-center gap-1 transition-colors"
             >
-              ⚡ Tester: Fill Sample Info
+              {t('tester_fill_sample')}
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Responder Name
+                {t('responder_name_label')}
               </label>
               <input
                 type="text"
@@ -128,7 +128,7 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Badge / Reg Number
+                {t('badge_reg_label')}
               </label>
               <input
                 type="text"
@@ -144,7 +144,7 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Hospital / Ambulance Organization
+              {t('hospital_org_label')}
             </label>
             <input
               type="text"
@@ -159,7 +159,7 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-              Clinical Emergency Reason
+              {t('clinical_reason_label')}
             </label>
             <textarea
               rows={2}
@@ -178,7 +178,7 @@ export function BreakGlassModal({ isOpen, onClose, vaultId, onBreakGlassSuccess 
             className="w-full mt-2 py-4 rounded-2xl bg-red-600 hover:bg-red-700 active:scale-98 text-white font-black text-base flex items-center justify-center gap-2 shadow-xl shadow-red-200 transition-all border-2 border-red-700 disabled:opacity-50"
           >
             <Stethoscope className="w-5 h-5" />
-            <span>{loading ? 'Transmitting Emergency Broadcast...' : 'CONFIRM & UNLOCK TIER 2 CLINICAL DATA'}</span>
+            <span>{loading ? t('transmitting_broadcast') : t('confirm_unlock_tier2')}</span>
           </button>
         </form>
       </div>

@@ -44,6 +44,37 @@ app.use('/api/audit', auditRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/ussd', ussdRoutes);
 
+// Native Multilingual Indic TTS Audio Proxy
+app.get('/api/tts', async (req, res) => {
+  try {
+    const { q, lang } = req.query;
+    if (!q) {
+      return res.status(400).json({ error: 'Missing text parameter q' });
+    }
+    const targetLang = lang || 'en';
+    const cleanText = q.length > 200 ? q.slice(0, 195) : q;
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(cleanText)}&tl=${targetLang}&client=tw-ob`;
+
+    const upstream = await fetch(ttsUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    if (!upstream.ok) {
+      return res.status(upstream.status).json({ error: 'Upstream TTS service error' });
+    }
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    const arrayBuffer = await upstream.arrayBuffer();
+    res.send(Buffer.from(arrayBuffer));
+  } catch (err) {
+    console.error('TTS proxy error:', err);
+    res.status(500).json({ error: 'TTS conversion failed' });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
