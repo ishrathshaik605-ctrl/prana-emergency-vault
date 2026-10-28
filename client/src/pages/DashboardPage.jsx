@@ -4,7 +4,7 @@ import {
   ShieldCheck, HeartPulse, UserPlus, Trash2, 
   Download, Printer, FileText, Lock, AlertTriangle, CheckCircle,
   Users, ArrowRightLeft, PlusCircle, ExternalLink, Edit3, X,
-  User, Phone, Building2, Stethoscope, ChevronRight, ChevronLeft, Check
+  User, Phone, Building2, Stethoscope, ChevronRight, ChevronLeft, Check, Smartphone
 } from 'lucide-react';
 import { 
   getUserVaults, 
@@ -18,6 +18,7 @@ export function DashboardPage({
   onOpenEmergency, 
   onStartSetup, 
   onOpenPrintable, 
+  onOpenPairing,
   onOpenAudit, 
   onBack,
   autoOpenEdit = false,
@@ -412,6 +413,16 @@ export function DashboardPage({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onOpenPairing && onOpenPairing(vault)}
+            className="px-3.5 py-2 rounded-xl bg-cyan-700 hover:bg-cyan-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer active:scale-95"
+            title="Pair this vault to your mobile phone via QR code"
+          >
+            <Smartphone className="w-4 h-4 text-cyan-200" />
+            <span>{t('pair_device_btn')}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => {

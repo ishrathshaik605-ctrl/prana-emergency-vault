@@ -202,6 +202,39 @@ router.get('/:id', async (req, res) => {
 });
 
 /**
+ * POST /api/vault/:id/pair-device
+ * Registers and pairs a new secondary mobile device / browser to this vault
+ */
+router.post('/:id/pair-device', async (req, res) => {
+  try {
+    const vaultId = req.params.id.toUpperCase();
+    const vault = await dbGet('SELECT * FROM vaults WHERE id = ?', [vaultId]);
+    if (!vault) {
+      return res.status(404).json({ error: 'Vault not found' });
+    }
+
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Mobile Paired Device';
+
+    // Record audit event for device pairing
+    await dbRun(
+      `INSERT INTO audit_logs (id, vault_id, action, actor_name, clinical_reason, access_tier, actor_org)
+       VALUES (?, ?, 'device_paired', 'Mobile Device Pairing', 'Vault linked to secondary device via QR pairing', 'Tier 2', ?)`,
+      [uuidv4(), vaultId, `IP: ${clientIp}`]
+    );
+
+    const fullVault = await fetchFullDecryptedVault(vaultId);
+    return res.json({
+      success: true,
+      message: 'Device successfully paired',
+      vault: fullVault
+    });
+  } catch (err) {
+    console.error('Error pairing device:', err);
+    return res.status(500).json({ error: 'Failed to pair device' });
+  }
+});
+
+/**
  * POST /api/vault/check-existing
  * Check if a vault already exists with this phone number or owner name
  * Body: { phone?: string, name?: string }

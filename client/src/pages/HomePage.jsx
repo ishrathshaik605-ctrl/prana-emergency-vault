@@ -19,6 +19,7 @@ export function HomePage({
   onStartSetup, 
   onOpenEmergency, 
   onOpenPrintable, 
+  onOpenPairing,
   onOpenFeaturePhone,
   onOpenAudit,
   onOpenDashboard,
@@ -284,7 +285,7 @@ export function HomePage({
           </div>
 
           {/* Action Buttons for User's Vault */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-2">
             <button
               type="button"
               onClick={() => onOpenPrintable(activeVault)}
@@ -292,6 +293,16 @@ export function HomePage({
             >
               <Printer className="w-4 h-4" />
               <span>{t('print_qr_badge')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onOpenPairing && onOpenPairing(activeVault)}
+              className="p-3.5 rounded-2xl bg-cyan-700 hover:bg-cyan-600 text-white font-extrabold text-xs shadow-md shadow-cyan-950 flex items-center justify-center gap-2 transition-transform active:scale-95 cursor-pointer"
+              title="Pair this vault to your mobile phone via QR code"
+            >
+              <Smartphone className="w-4 h-4 text-cyan-200" />
+              <span>{t('pair_device_btn')}</span>
             </button>
 
             <button
@@ -477,18 +488,18 @@ export function HomePage({
             </button>
           </div>
 
-          {/* Lost Vault Recovery Card */}
+          {/* Multi-Device Vault Sync & Recovery Card (Option C) */}
           <div className="bg-gradient-to-r from-indigo-50/90 via-white to-indigo-50/90 p-4 sm:p-5 rounded-3xl border border-indigo-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left mt-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-indigo-200">
-                <RotateCcw className="w-5 h-5" />
+                <Smartphone className="w-5 h-5 text-white" />
               </div>
               <div>
                 <span className="text-xs font-black text-slate-900 block">
-                  {t('recover_existing_vault_title')}
+                  {t('link_existing_vault_card_title')}
                 </span>
                 <span className="text-[11px] text-slate-600 block mt-0.5">
-                  {t('recover_existing_vault_desc')}
+                  {t('link_existing_vault_card_desc')}
                 </span>
               </div>
             </div>
@@ -501,8 +512,8 @@ export function HomePage({
               }}
               className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-md shadow-indigo-100 shrink-0 transition-transform active:scale-95 cursor-pointer flex items-center gap-1.5"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>{t('recover_earlier_vault')}</span>
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>{t('link_this_device_btn')}</span>
             </button>
           </div>
         </div>

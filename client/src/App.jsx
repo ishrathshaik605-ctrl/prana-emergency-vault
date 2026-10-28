@@ -6,11 +6,14 @@ import { EmergencyModeModal } from './components/EmergencyModeModal';
 import { PrintableCard } from './components/PrintableCard';
 import { FeaturePhoneSimulator } from './components/FeaturePhoneSimulator';
 import { LiveAlertToast } from './components/LiveAlertToast';
+import { DevicePairingModal } from './components/DevicePairingModal';
+import { Smartphone, X } from 'lucide-react';
 import { 
   getStoredVaultId, 
   setStoredVaultId, 
   getUserVaults, 
   getActiveUserVault, 
+  saveUserVault,
   detectAndSaveDeviceIp 
 } from './utils/vaultStorage';
 
@@ -30,6 +33,9 @@ function AppContent() {
   const [isEmergencyOpen, setIsEmergencyOpen] = useState(false);
   const [isPrintableOpen, setIsPrintableOpen] = useState(false);
   const [isFeaturePhoneOpen, setIsFeaturePhoneOpen] = useState(false);
+  const [isPairingOpen, setIsPairingOpen] = useState(false);
+  const [pairingVault, setPairingVault] = useState(null);
+  const [pairedSuccessBanner, setPairedSuccessBanner] = useState(null);
   const [autoOpenEdit, setAutoOpenEdit] = useState(false);
 
   // Check URL params, pathname, hash, or device storage on load
@@ -37,8 +43,53 @@ function AppContent() {
     // Detect & save device IP in the background
     detectAndSaveDeviceIp();
 
-    // 1. Search Query Parameters (?v=AV-8842 or ?vault=AV-8842)
     const params = new URLSearchParams(window.location.search);
+    const hashStr = window.location.hash ? window.location.hash.replace(/^#/, '') : '';
+    const hashParams = new URLSearchParams(hashStr);
+
+    // 0. Mobile QR Device Pairing (?pair=AV-XXXX or #pair=AV-XXXX)
+    const pairParam = params.get('pair') || hashParams.get('pair');
+    if (pairParam) {
+      const cleanPairId = pairParam.toUpperCase();
+      const nameParam = params.get('n') || hashParams.get('n') || '';
+      const bgParam = params.get('bg') || hashParams.get('bg') || '';
+
+      // Instant offline resilience
+      const fallbackVault = {
+        id: cleanPairId,
+        owner_name: decodeURIComponent(nameParam) || 'Vault Owner',
+        blood_group: decodeURIComponent(bgParam) || 'O+ve'
+      };
+      saveUserVault(fallbackVault);
+      setActiveVaultData(fallbackVault);
+      setSelectedVaultId(cleanPairId);
+      setStoredVaultId(cleanPairId);
+      setPairedSuccessBanner(cleanPairId);
+      setCurrentPage('home');
+
+      // Fetch live decrypted record & record device pairing audit event
+      fetch(`/api/vault/${cleanPairId}/pair-device`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.vault) {
+            saveUserVault(data.vault);
+            setActiveVaultData(data.vault);
+          }
+        })
+        .catch(err => {
+          console.warn('Pairing offline fallback applied; network fetch failed:', err);
+        });
+
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {}
+      return;
+    }
+
+    // 1. Search Query Parameters (?v=AV-8842 or ?vault=AV-8842)
     let vParam = params.get('v') || params.get('vault');
 
     // 2. Direct Pathname (/e/AV-8842 or /emergency/AV-8842)
@@ -167,6 +218,22 @@ function AppContent() {
     setIsPrintableOpen(true);
   };
 
+  const handleOpenPairing = (vault = null) => {
+    const userVaults = getUserVaults();
+    let fresh = vault;
+    if (!fresh && activeVaultData) fresh = activeVaultData;
+    if (!fresh && userVaults.length > 0) fresh = userVaults[0];
+    if (!fresh) {
+      fresh = {
+        id: selectedVaultId || 'AV-8842',
+        owner_name: 'Vault Owner',
+        blood_group: 'B+ve'
+      };
+    }
+    setPairingVault(fresh);
+    setIsPairingOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans transition-colors selection:bg-red-500 selection:text-white">
       {/* Header */}
@@ -181,12 +248,41 @@ function AppContent() {
 
       {/* Main Page Content */}
       <main className="flex-1">
+        {pairedSuccessBanner && (
+          <div className="max-w-4xl mx-auto px-4 pt-4 animate-fade-in">
+            <div className="p-4 rounded-2xl bg-emerald-600 text-white shadow-lg flex items-center justify-between gap-3 border border-emerald-500">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <Smartphone className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm leading-tight">
+                    {t('device_paired_success')}
+                  </p>
+                  <p className="text-xs text-emerald-100 font-mono mt-0.5">
+                    Vault ID: <strong>{pairedSuccessBanner}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPairedSuccessBanner(null)}
+                className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white cursor-pointer"
+                aria-label="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {currentPage === 'home' && (
           <HomePage
             onSelectVault={handleSelectVault}
             onStartSetup={handleStartSetup}
             onOpenEmergency={() => setIsEmergencyOpen(true)}
             onOpenPrintable={() => handleOpenPrintable()}
+            onOpenPairing={handleOpenPairing}
             onOpenFeaturePhone={() => setIsFeaturePhoneOpen(true)}
             onOpenAudit={() => setCurrentPage('audit')}
             onOpenDashboard={handleOpenDashboard}
@@ -219,6 +315,7 @@ function AppContent() {
             }}
             onStartSetup={handleStartSetup}
             onOpenPrintable={handleOpenPrintable}
+            onOpenPairing={handleOpenPairing}
             onOpenAudit={() => setCurrentPage('audit')}
             onBack={() => setCurrentPage('home')}
             autoOpenEdit={autoOpenEdit}
@@ -284,6 +381,16 @@ function AppContent() {
         onOpenAudit={(vId) => {
           setSelectedVaultId(vId);
           setCurrentPage('audit');
+        }}
+      />
+
+      <DevicePairingModal
+        isOpen={isPairingOpen}
+        onClose={() => setIsPairingOpen(false)}
+        vault={pairingVault || activeVaultData}
+        onSimulatePair={(id) => {
+          setIsPairingOpen(false);
+          setPairedSuccessBanner(id);
         }}
       />
     </div>
