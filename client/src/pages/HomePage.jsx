@@ -23,7 +23,7 @@ export function HomePage({
   onOpenFeaturePhone,
   onOpenAudit,
   onOpenDashboard,
-  currentVaultId = 'AV-8842',
+  currentVaultId = 'AV-7045X',
   triggerRecovery = false,
   onRecoveryClosed
 }) {

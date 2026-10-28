@@ -5,14 +5,42 @@ const STORAGE_KEY_USER_VAULTS = 'prana_user_vaults';
 const STORAGE_KEY_DEVICE_IP = 'prana_device_ip';
 const STORAGE_KEY_SHOW_DEMO = 'prana_show_demo';
 
+export const DEFAULT_ISHRATH_VAULT = {
+  id: 'AV-7045X',
+  owner_name: 'Ishrath Shaik',
+  blood_group: 'O+ve',
+  allergies: 'None reported',
+  conditions: 'Throat Infection',
+  medications: '',
+  implants: '',
+  hospital_name: 'CMC-VELLORE',
+  hospital_address: 'Vellore, Tamil Nadu',
+  home_address: 'Bazzar Street, kota, kota(nl), Nellore',
+  emergency_instructions: 'Contact father Shaik Ammasavali (+91 9502501287) immediately. Blood group is O+ve.',
+  emergency_contacts: [
+    { name: 'Shaik Ammasavali', relationship: 'Father', phone: '9502501287' },
+    { name: 'Shaik Ishrath', relationship: 'Mother', phone: '7032893804' }
+  ]
+};
+
+export const PRIMARY_USER_VAULT = DEFAULT_ISHRATH_VAULT;
+
 /**
  * Get active vault ID for this device
  */
 export function getStoredVaultId() {
   try {
-    return localStorage.getItem(STORAGE_KEY_ACTIVE_ID) || null;
+    const val = localStorage.getItem(STORAGE_KEY_ACTIVE_ID);
+    if (val && val !== 'AV-8842' && val !== 'AV-7721' && val !== 'AV-9017S') {
+      return val.toUpperCase();
+    }
+    const vaults = getUserVaults();
+    if (vaults && vaults.length > 0 && vaults[0].id) {
+      return vaults[0].id.toUpperCase();
+    }
+    return 'AV-7045X';
   } catch (e) {
-    return null;
+    return 'AV-7045X';
   }
 }
 
@@ -21,10 +49,12 @@ export function getStoredVaultId() {
  */
 export function setStoredVaultId(id) {
   try {
-    if (id) {
+    if (id && id !== 'AV-8842' && id !== 'AV-7721' && id !== 'AV-9017S') {
       localStorage.setItem(STORAGE_KEY_ACTIVE_ID, id.toUpperCase());
     } else {
-      localStorage.removeItem(STORAGE_KEY_ACTIVE_ID);
+      const vaults = getUserVaults();
+      const fallbackId = (vaults && vaults.length > 0 && vaults[0].id) ? vaults[0].id : 'AV-7045X';
+      localStorage.setItem(STORAGE_KEY_ACTIVE_ID, fallbackId);
     }
   } catch (e) {}
 }
@@ -35,9 +65,17 @@ export function setStoredVaultId(id) {
 export function getUserVaults() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_USER_VAULTS);
-    return raw ? JSON.parse(raw) : [];
+    let vaults = raw ? JSON.parse(raw) : [];
+    // Clean any unwanted dummy seeds, but preserve real user vaults (like AV-7045X and AV-3288G)
+    vaults = vaults.filter(v => v && v.id && v.id !== 'AV-9017S' && v.id !== 'AV-8842' && v.id !== 'AV-7721');
+    if (!vaults || vaults.length === 0) {
+      vaults = [DEFAULT_ISHRATH_VAULT];
+      localStorage.setItem(STORAGE_KEY_USER_VAULTS, JSON.stringify(vaults));
+      localStorage.setItem(STORAGE_KEY_ACTIVE_ID, 'AV-7045X');
+    }
+    return vaults;
   } catch (e) {
-    return [];
+    return [DEFAULT_ISHRATH_VAULT];
   }
 }
 
@@ -55,15 +93,14 @@ export function hasUserCreatedVaults() {
 export function getActiveUserVault() {
   try {
     const vaults = getUserVaults();
-    if (!vaults || vaults.length === 0) return null;
     const activeId = getStoredVaultId();
     if (activeId) {
       const match = vaults.find(v => v.id && v.id.toUpperCase() === activeId.toUpperCase());
       if (match) return match;
     }
-    return vaults[0];
+    return (vaults && vaults.length > 0) ? vaults[0] : DEFAULT_ISHRATH_VAULT;
   } catch (e) {
-    return null;
+    return DEFAULT_ISHRATH_VAULT;
   }
 }
 

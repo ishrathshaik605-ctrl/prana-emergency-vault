@@ -26,7 +26,7 @@ import { AuditReportPage } from './pages/AuditReportPage';
 function AppContent() {
   const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'emergency' | 'setup' | 'dashboard' | 'audit'
-  const [selectedVaultId, setSelectedVaultId] = useState(() => getStoredVaultId() || 'AV-8842');
+  const [selectedVaultId, setSelectedVaultId] = useState(() => getStoredVaultId() || 'AV-7045X');
   const [activeVaultData, setActiveVaultData] = useState(() => getActiveUserVault());
 
   // Modal visibility states
@@ -43,6 +43,19 @@ function AppContent() {
   useEffect(() => {
     // Detect & save device IP in the background
     detectAndSaveDeviceIp();
+
+    // Auto-restore and map vault matching this device IP address from the server
+    fetch('/api/vault/by-device-ip')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.vault) {
+          saveUserVault(data.vault);
+          setActiveVaultData(data.vault);
+          setSelectedVaultId(data.vault.id);
+          setStoredVaultId(data.vault.id);
+        }
+      })
+      .catch(err => console.warn('Device IP auto-restore check:', err));
 
     const params = new URLSearchParams(window.location.search);
     const hashStr = window.location.hash ? window.location.hash.replace(/^#/, '') : '';

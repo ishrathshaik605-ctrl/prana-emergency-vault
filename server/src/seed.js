@@ -241,137 +241,11 @@ async function seedData() {
   }
 
   // ==========================================
-  // Persona 3: Ishrath Shaik (AV-9017S)
-  // ==========================================
-  const existingIshrath = await dbGet('SELECT id FROM vaults WHERE id = ?', ['AV-9017S']);
-  if (!existingIshrath) {
-    console.log('Seeding clinical persona 3: Ishrath Shaik (AV-9017S)...');
-    const ishrathUserId = 'user-ishrath-shaik-003';
-    await dbRun(
-      `INSERT INTO users (id, phone, name, pin_hash, role, language)
-       VALUES (?, ?, ?, ?, 'owner', 'te')`,
-      [ishrathUserId, '+919999999999', 'Ishrath Shaik', hashValue('1234')]
-    );
-
-    const ishrathOfflinePayload = JSON.stringify({
-      v: 'AV-9017S',
-      n: 'Ishrath Shaik',
-      bg: 'O+ve',
-      al: 'None reported',
-      c1: 'Family Guardian:+919848012345',
-      c2: '',
-      od: 1,
-      url: 'https://prana-emergency-vault.vercel.app/e/AV-9017S'
-    });
-
-    await dbRun(
-      `INSERT INTO vaults (
-        id, owner_id, owner_name, dob, gender, blood_group,
-        allergies_enc, conditions_enc, medications_enc, implants_enc, organ_donor,
-        primary_doctor_enc, doctor_phone_enc, hospital_name, hospital_address,
-        home_address_enc, last_known_location, emergency_instructions_enc,
-        voice_note_url, offline_qr_payload
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        'AV-9017S',
-        ishrathUserId,
-        'Ishrath Shaik',
-        '2008-05-06',
-        'Female',
-        'O+ve',
-        encryptField('None reported'),
-        encryptField('None reported'),
-        encryptField('None reported'),
-        encryptField('None reported'),
-        1,
-        encryptField('Dr. R. Reddy'),
-        encryptField('+919848011223'),
-        'Apollo Hospital',
-        'Nellore, Andhra Pradesh',
-        encryptField('Bazzar Street, kota, kota(nl), Nellore'),
-        'Nellore, Andhra Pradesh',
-        encryptField('Contact family immediately in case of emergency. Blood group is O+ve.'),
-        null,
-        ishrathOfflinePayload
-      ]
-    );
-
-    await dbRun(
-      `INSERT INTO emergency_contacts (id, vault_id, name, relationship, phone, priority, notify_on_access, can_authorize_tier1)
-       VALUES (?, ?, ?, ?, ?, ?, 1, 1)`,
-      [uuidv4(), 'AV-9017S', 'Family Guardian', 'Parent', '+919848012345', 1]
-    );
-  }
-
-  // ==========================================
-  // Persona 4: m.k.vishnu vardhan (AV-3288G)
-  // ==========================================
-  const existingVishnu = await dbGet('SELECT id FROM vaults WHERE id = ?', ['AV-3288G']);
-  if (!existingVishnu) {
-    console.log('Seeding Persona 4: m.k.vishnu vardhan (AV-3288G)...');
-    const vishnuUserId = 'user-vishnu-vardhan-004';
-    await dbRun(
-      `INSERT INTO users (id, phone, name, pin_hash, role, language)
-       VALUES (?, ?, ?, ?, 'owner', 'te')`,
-      [vishnuUserId, '+918125441287', 'm.k.vishnu vardhan', hashValue('1234')]
-    );
-
-    const vishnuOfflinePayload = JSON.stringify({
-      v: 'AV-3288G',
-      n: 'm.k.vishnu vardhan',
-      bg: 'O+ve',
-      al: 'ntg',
-      c1: 'ishrath:+918125441287',
-      c2: '',
-      od: 1,
-      url: 'https://prana-emergency-vault.vercel.app/e/AV-3288G'
-    });
-
-    await dbRun(
-      `INSERT INTO vaults (
-        id, owner_id, owner_name, dob, gender, blood_group,
-        allergies_enc, conditions_enc, medications_enc, implants_enc, organ_donor,
-        primary_doctor_enc, doctor_phone_enc, hospital_name, hospital_address,
-        home_address_enc, last_known_location, emergency_instructions_enc,
-        voice_note_url, offline_qr_payload
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        'AV-3288G',
-        vishnuUserId,
-        'm.k.vishnu vardhan',
-        '2000-01-01',
-        'Male',
-        'O+ve',
-        encryptField('ntg'),
-        encryptField('None'),
-        encryptField('None'),
-        encryptField('None'),
-        1,
-        encryptField('Dr. Rao'),
-        encryptField('+919848011223'),
-        'CMC Hospital',
-        'Vellore',
-        encryptField('Andhra Pradesh'),
-        'Andhra Pradesh',
-        encryptField('Emergency: Contact ishrath immediately (+91 8125441287). Blood group is O+ve.'),
-        null,
-        vishnuOfflinePayload
-      ]
-    );
-
-    await dbRun(
-      `INSERT INTO emergency_contacts (id, vault_id, name, relationship, phone, priority, notify_on_access, can_authorize_tier1)
-       VALUES (?, ?, ?, ?, ?, ?, 1, 1)`,
-      [uuidv4(), 'AV-3288G', 'ishrath', 'Emergency Contact / Family', '+918125441287', 1]
-    );
-  }
-
-  // ==========================================
-  // Persona 5: Ishrath Shaik (AV-7045X)
+  // User Created Vault 1: Ishrath Shaik (AV-7045X)
   // ==========================================
   const existingIshrathX = await dbGet('SELECT id FROM vaults WHERE id = ?', ['AV-7045X']);
   if (!existingIshrathX) {
-    console.log('Seeding Persona 5: Ishrath Shaik (AV-7045X)...');
+    console.log('Seeding User Vault: Ishrath Shaik (AV-7045X)...');
     const ishrathXUserId = 'user-ishrath-shaik-005';
     await dbRun(
       `INSERT INTO users (id, phone, name, pin_hash, role, language)
@@ -434,7 +308,76 @@ async function seedData() {
     );
   }
 
-  console.log('Seed database ready with Ramesh Patel, Priya Sharma, Ishrath Shaik (AV-9017S, AV-7045X), and m.k.vishnu vardhan (AV-3288G)!');
+  // ==========================================
+  // User Created Vault 2: m.k.vishnu vardhan (AV-3288G)
+  // ==========================================
+  const existingVishnu = await dbGet('SELECT id FROM vaults WHERE id = ?', ['AV-3288G']);
+  if (!existingVishnu) {
+    console.log('Seeding User Vault: m.k.vishnu vardhan (AV-3288G)...');
+    const vishnuUserId = 'user-vishnu-vardhan-004';
+    await dbRun(
+      `INSERT INTO users (id, phone, name, pin_hash, role, language)
+       VALUES (?, ?, ?, ?, 'owner', 'te')`,
+      [vishnuUserId, '+918125441287', 'm.k.vishnu vardhan', hashValue('1234')]
+    );
+
+    const vishnuOfflinePayload = JSON.stringify({
+      v: 'AV-3288G',
+      n: 'm.k.vishnu vardhan',
+      bg: 'O+ve',
+      al: 'ntg',
+      c1: 'ishrath:+918125441287',
+      c2: '',
+      od: 1,
+      url: 'https://prana-emergency-vault.vercel.app/e/AV-3288G'
+    });
+
+    await dbRun(
+      `INSERT INTO vaults (
+        id, owner_id, owner_name, dob, gender, blood_group,
+        allergies_enc, conditions_enc, medications_enc, implants_enc, organ_donor,
+        primary_doctor_enc, doctor_phone_enc, hospital_name, hospital_address,
+        home_address_enc, last_known_location, emergency_instructions_enc,
+        voice_note_url, offline_qr_payload
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        'AV-3288G',
+        vishnuUserId,
+        'm.k.vishnu vardhan',
+        '2000-01-01',
+        'Male',
+        'O+ve',
+        encryptField('ntg'),
+        encryptField('None'),
+        encryptField('None'),
+        encryptField('None'),
+        1,
+        encryptField('Dr. Rao'),
+        encryptField('+919848011223'),
+        'CMC Hospital',
+        'Vellore',
+        encryptField('Andhra Pradesh'),
+        'Andhra Pradesh',
+        encryptField('Emergency: Contact ishrath immediately (+91 8125441287). Blood group is O+ve.'),
+        null,
+        vishnuOfflinePayload
+      ]
+    );
+
+    await dbRun(
+      `INSERT INTO emergency_contacts (id, vault_id, name, relationship, phone, priority, notify_on_access, can_authorize_tier1)
+       VALUES (?, ?, ?, ?, ?, ?, 1, 1)`,
+      [uuidv4(), 'AV-3288G', 'ishrath', 'Emergency Contact / Family', '+918125441287', 1]
+    );
+  }
+
+  // Ensure user vaults are mapped in device_ip_vaults
+  await dbRun(
+    `INSERT OR IGNORE INTO device_ip_vaults (ip_address, vault_id)
+     VALUES ('127.0.0.1', 'AV-7045X'), ('::1', 'AV-7045X')`
+  );
+
+  console.log('Seed database ready with Ramesh Patel (AV-8842), Priya Sharma (AV-7721), and user vaults Ishrath Shaik (AV-7045X) and m.k.vishnu vardhan (AV-3288G)!');
 }
 
 module.exports = { seedData };

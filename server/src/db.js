@@ -218,6 +218,15 @@ async function initSchema() {
     )
   `);
 
+  await dbRun(`
+    CREATE TABLE IF NOT EXISTS device_ip_vaults (
+      ip_address TEXT NOT NULL,
+      vault_id TEXT NOT NULL,
+      last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (ip_address, vault_id)
+    )
+  `);
+
   console.log('Database tables verified and initialized successfully.');
 }
 
