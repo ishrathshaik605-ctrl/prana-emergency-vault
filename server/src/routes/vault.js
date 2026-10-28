@@ -319,7 +319,7 @@ router.post('/check-existing', async (req, res) => {
 
     let match = null;
 
-    // 1. Direct Vault ID lookup (e.g., AV-9017S or 9017S)
+    // 1. Direct Vault ID lookup (e.g., AV-7045X)
     const upperTerm = term.toUpperCase();
     const idMatch = await dbGet(
       `SELECT v.id, v.owner_name, v.blood_group, v.created_at, ec.phone, ec.name as contact_name

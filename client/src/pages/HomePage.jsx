@@ -88,7 +88,7 @@ export function HomePage({
     e.preventDefault();
     const queryTerm = recoveryPhone.trim();
     if (!queryTerm || queryTerm.length < 2) {
-      setRecoveryError('Please enter your Vault ID (e.g. AV-9017S), registered mobile number, or full name');
+      setRecoveryError('Please enter your Vault ID (e.g. AV-7045X), registered mobile number, or full name');
       return;
     }
     setRecoveryLoading(true);
@@ -408,7 +408,7 @@ export function HomePage({
                   </span>
                 </h4>
                 <p className="text-xs text-indigo-200/90 mt-0.5">
-                  Lost your vault on this browser or switching devices? Enter your <strong>Vault ID (e.g. AV-9017S)</strong>, registered phone, or name to restore it immediately.
+                  Lost your vault on this browser or switching devices? Enter your <strong>Vault ID (e.g. AV-7045X)</strong>, registered phone, or name to restore it immediately.
                 </p>
               </div>
             </div>
@@ -874,13 +874,13 @@ export function HomePage({
                     type="text"
                     value={recoveryPhone}
                     onChange={(e) => setRecoveryPhone(e.target.value)}
-                    placeholder="e.g. AV-9017S, +91 98480 12345, or Ishrath Shaik"
+                    placeholder="e.g. AV-7045X or registered mobile number"
                     className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-base font-bold text-slate-900"
                     autoFocus
                     required
                   />
                   <span className="text-[11px] text-slate-500 mt-1 block">
-                    Tip: Enter your Vault ID (like <strong>AV-9017S</strong>) to immediately find your records.
+                    Tip: Enter your Vault ID (like <strong>AV-7045X</strong>) or registered phone number to immediately find your records.
                   </span>
                 </div>
 
