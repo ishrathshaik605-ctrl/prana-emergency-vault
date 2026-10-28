@@ -3,10 +3,19 @@ import { useLanguage } from '../context/LanguageContext';
 import { useVoice } from '../context/VoiceContext';
 import { 
   ShieldAlert, ShieldCheck, Volume2, Mic, Eye, Globe, PhoneCall, 
-  HelpCircle, Printer, FileText, Smartphone 
+  HelpCircle, Printer, FileText, Smartphone, RotateCcw 
 } from 'lucide-react';
 
-export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, onOpenAudit, onOpenDashboard, currentVaultId }) {
+export function Header({ 
+  onOpenEmergency, 
+  onOpenPrintable, 
+  onOpenFeaturePhone, 
+  onOpenAudit, 
+  onOpenDashboard, 
+  currentVaultId,
+  hasUserVault = true,
+  onOpenRecovery
+}) {
   const { lang, setLang, t, highContrast, setHighContrast, speakText } = useLanguage();
   const { startListening, isListening } = useVoice();
 
@@ -80,21 +89,33 @@ export function Header({ onOpenEmergency, onOpenPrintable, onOpenFeaturePhone, o
             </select>
           </div>
 
-          {/* My Vault / Dashboard Access */}
-          {onOpenDashboard && (
+          {/* My Vault or Restore Vault Access */}
+          {hasUserVault ? (
+            onOpenDashboard && (
+              <button
+                onClick={() => onOpenDashboard(currentVaultId)}
+                title="Open My Vault Profile & Dashboard"
+                aria-label="Open My Vault Profile & Dashboard"
+                className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm group"
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span>{t('my_vault_btn')}</span>
+                {currentVaultId && (
+                  <span className="text-[10px] font-mono text-emerald-300 bg-slate-800 px-1.5 py-0.5 rounded hidden sm:inline">
+                    {currentVaultId}
+                  </span>
+                )}
+              </button>
+            )
+          ) : (
             <button
-              onClick={() => onOpenDashboard(currentVaultId)}
-              title="Open My Vault Profile & Dashboard"
-              aria-label="Open My Vault Profile & Dashboard"
-              className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm group"
+              onClick={() => onOpenRecovery ? onOpenRecovery() : onOpenDashboard && onOpenDashboard(currentVaultId)}
+              title="Restore your previously created emergency vault"
+              aria-label="Restore your previously created emergency vault"
+              className="py-1.5 px-3 rounded-lg bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm group cursor-pointer"
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-              <span>{t('my_vault_btn')}</span>
-              {currentVaultId && (
-                <span className="text-[10px] font-mono text-emerald-300 bg-slate-800 px-1.5 py-0.5 rounded hidden sm:inline">
-                  {currentVaultId}
-                </span>
-              )}
+              <RotateCcw className="w-4 h-4 text-indigo-200 group-hover:rotate-180 transition-transform duration-500" />
+              <span>Restore Vault</span>
             </button>
           )}
 

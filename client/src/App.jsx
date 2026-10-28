@@ -37,6 +37,7 @@ function AppContent() {
   const [pairingVault, setPairingVault] = useState(null);
   const [pairedSuccessBanner, setPairedSuccessBanner] = useState(null);
   const [autoOpenEdit, setAutoOpenEdit] = useState(false);
+  const [openRecoveryModal, setOpenRecoveryModal] = useState(false);
 
   // Check URL params, pathname, hash, or device storage on load
   useEffect(() => {
@@ -244,6 +245,11 @@ function AppContent() {
         onOpenAudit={() => setCurrentPage('audit')}
         onOpenDashboard={handleOpenDashboard}
         currentVaultId={selectedVaultId}
+        hasUserVault={getUserVaults().length > 0}
+        onOpenRecovery={() => {
+          setCurrentPage('home');
+          setOpenRecoveryModal(true);
+        }}
       />
 
       {/* Main Page Content */}
@@ -287,6 +293,8 @@ function AppContent() {
             onOpenAudit={() => setCurrentPage('audit')}
             onOpenDashboard={handleOpenDashboard}
             currentVaultId={selectedVaultId}
+            triggerRecovery={openRecoveryModal}
+            onRecoveryClosed={() => setOpenRecoveryModal(false)}
           />
         )}
 

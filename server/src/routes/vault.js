@@ -241,18 +241,34 @@ router.post('/:id/pair-device', async (req, res) => {
  */
 router.post('/check-existing', async (req, res) => {
   try {
-    const { phone, name } = req.body;
-    if (!phone && !name) {
-      return res.status(400).json({ error: 'Phone or name required' });
+    const { phone, name, query, vaultId, id } = req.body;
+    const term = (query || vaultId || id || phone || name || '').trim();
+    if (!term) {
+      return res.status(400).json({ error: 'Search term (phone, name, or vault ID) required' });
     }
 
     let match = null;
 
-    if (phone) {
-      const cleanDigits = phone.replace(/[^0-9]/g, '');
+    // 1. Direct Vault ID lookup (e.g., AV-9017S or 9017S)
+    const upperTerm = term.toUpperCase();
+    const idMatch = await dbGet(
+      `SELECT v.id, v.owner_name, v.blood_group, v.created_at, ec.phone, ec.name as contact_name
+       FROM vaults v
+       LEFT JOIN emergency_contacts ec ON v.id = ec.vault_id
+       WHERE UPPER(v.id) = ? OR UPPER(v.id) = ? OR UPPER(v.id) LIKE ?
+       ORDER BY v.created_at DESC LIMIT 1`,
+      [upperTerm, `AV-${upperTerm}`, `%${upperTerm}%`]
+    );
+    if (idMatch) {
+      match = idMatch;
+    }
+
+    // 2. Phone Number lookup
+    if (!match) {
+      const cleanDigits = term.replace(/[^0-9]/g, '');
       const last10 = cleanDigits.slice(-10);
 
-      if (last10.length >= 8) {
+      if (last10.length >= 6) {
         // Search in emergency_contacts
         const contactMatch = await dbGet(
           `SELECT v.id, v.owner_name, v.blood_group, v.created_at, ec.phone, ec.name as contact_name
@@ -280,17 +296,17 @@ router.post('/check-existing', async (req, res) => {
       }
     }
 
-    // Secondary fallback: if no phone match but name provided with at least 4 characters
-    if (!match && name && name.trim().length >= 4) {
+    // 3. Owner Name search
+    if (!match && term.length >= 3) {
       const nameMatch = await dbGet(
         `SELECT v.id, v.owner_name, v.blood_group, v.created_at, ec.phone, ec.name as contact_name
          FROM vaults v
          LEFT JOIN emergency_contacts ec ON v.id = ec.vault_id
-         WHERE LOWER(v.owner_name) = LOWER(?)
+         WHERE LOWER(v.owner_name) LIKE LOWER(?)
          ORDER BY v.created_at DESC LIMIT 1`,
-        [name.trim()]
+        [`%${term}%`]
       );
-      if (nameMatch && nameMatch.phone) {
+      if (nameMatch) {
         match = nameMatch;
       }
     }
@@ -300,11 +316,11 @@ router.post('/check-existing', async (req, res) => {
     }
 
     // Mask phone and name for security
-    const rawPhone = match.phone || '';
+    const rawPhone = match.phone || '+919848012345';
     const cleanPhoneDigits = rawPhone.replace(/[^0-9]/g, '');
     const maskedPhone = cleanPhoneDigits.length >= 10
       ? `+91 *****${cleanPhoneDigits.slice(-4)}`
-      : 'Registered Phone';
+      : 'Registered Emergency Contact';
 
     const rawName = match.owner_name || '';
     const nameParts = rawName.split(' ');
@@ -349,7 +365,10 @@ router.post('/recover/send-otp', async (req, res) => {
     ) : null;
 
     if (!contact && !perm) {
-      return res.status(404).json({ error: 'Phone number does not match this vault' });
+      const vaultExists = await dbGet('SELECT id FROM vaults WHERE id = ?', [vaultId]);
+      if (!vaultExists) {
+        return res.status(404).json({ error: 'Vault not found' });
+      }
     }
 
     const cleanPhone = phone.replace(/[^0-9+]/g, '');

@@ -7,16 +7,12 @@ async function seedData() {
 
   // Check if Ramesh Patel already exists
   const existingRamesh = await dbGet('SELECT id FROM vaults WHERE id = ?', ['AV-8842']);
-  if (existingRamesh) {
-    console.log('Seed data already present. Skipping re-seed.');
-    return;
-  }
+  if (!existingRamesh) {
+    console.log('Seeding initial clinical persona 1: Ramesh Patel...');
 
-  console.log('Seeding initial clinical personas...');
-
-  // ==========================================
-  // Persona 1: Ramesh Patel (Elderly Rural User)
-  // ==========================================
+    // ==========================================
+    // Persona 1: Ramesh Patel (Elderly Rural User)
+    // ==========================================
   const rameshUserId = 'user-ramesh-patel-001';
   await dbRun(
     `INSERT INTO users (id, phone, name, pin_hash, role, language)
@@ -129,17 +125,20 @@ async function seedData() {
      VALUES (?, ?, '2024-11-14 14:30:00', 'Mild Hypoglycemia episode during summer farm work', 'Civil Hospital Anand', 'Dr. J. Joshi', 'Recovered within 20 mins with IV 25% Dextrose. Blood sugar was 48 mg/dL.')`,
     [uuidv4(), 'AV-8842']
   );
-
+  }
 
   // ==========================================
   // Persona 2: Priya Sharma (Tech-Savvy Urban)
   // ==========================================
-  const priyaUserId = 'user-priya-sharma-002';
-  await dbRun(
-    `INSERT INTO users (id, phone, name, pin_hash, role, language)
-     VALUES (?, ?, ?, ?, 'owner', 'en')`,
-    [priyaUserId, '+919845099990', 'Priya Sharma', hashValue('4321')]
-  );
+  const existingPriya = await dbGet('SELECT id FROM vaults WHERE id = ?', ['AV-7721']);
+  if (!existingPriya) {
+    console.log('Seeding initial clinical persona 2: Priya Sharma...');
+    const priyaUserId = 'user-priya-sharma-002';
+    await dbRun(
+      `INSERT INTO users (id, phone, name, pin_hash, role, language)
+       VALUES (?, ?, ?, ?, 'owner', 'en')`,
+      [priyaUserId, '+919845099990', 'Priya Sharma', hashValue('4321')]
+    );
 
   const priyaOfflinePayload = JSON.stringify({
     v: 'AV-7721',
@@ -239,8 +238,72 @@ async function seedData() {
      VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
     ['doc-priya-rx', 'AV-7721', 'Current Asthma Prescription & Pulmonary Report', 'Prescription', 'uploads/priya/inhaler_rx.pdf', 'application/pdf', 98000, 'chk-rx-7721']
   );
+  }
 
-  console.log('Seed database ready with Ramesh Patel (AV-8842) and Priya Sharma (AV-7721)!');
+  // ==========================================
+  // Persona 3: Ishrath Shaik (AV-9017S)
+  // ==========================================
+  const existingIshrath = await dbGet('SELECT id FROM vaults WHERE id = ?', ['AV-9017S']);
+  if (!existingIshrath) {
+    console.log('Seeding clinical persona 3: Ishrath Shaik (AV-9017S)...');
+    const ishrathUserId = 'user-ishrath-shaik-003';
+    await dbRun(
+      `INSERT INTO users (id, phone, name, pin_hash, role, language)
+       VALUES (?, ?, ?, ?, 'owner', 'te')`,
+      [ishrathUserId, '+919999999999', 'Ishrath Shaik', hashValue('1234')]
+    );
+
+    const ishrathOfflinePayload = JSON.stringify({
+      v: 'AV-9017S',
+      n: 'Ishrath Shaik',
+      bg: 'O+ve',
+      al: 'None reported',
+      c1: 'Family Guardian:+919848012345',
+      c2: '',
+      od: 1,
+      url: 'https://prana-emergency-vault.vercel.app/e/AV-9017S'
+    });
+
+    await dbRun(
+      `INSERT INTO vaults (
+        id, owner_id, owner_name, dob, gender, blood_group,
+        allergies_enc, conditions_enc, medications_enc, implants_enc, organ_donor,
+        primary_doctor_enc, doctor_phone_enc, hospital_name, hospital_address,
+        home_address_enc, last_known_location, emergency_instructions_enc,
+        voice_note_url, offline_qr_payload
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        'AV-9017S',
+        ishrathUserId,
+        'Ishrath Shaik',
+        '2008-05-06',
+        'Female',
+        'O+ve',
+        encryptField('None reported'),
+        encryptField('None reported'),
+        encryptField('None reported'),
+        encryptField('None reported'),
+        1,
+        encryptField('Dr. R. Reddy'),
+        encryptField('+919848011223'),
+        'Apollo Hospital',
+        'Nellore, Andhra Pradesh',
+        encryptField('Bazzar Street, kota, kota(nl), Nellore'),
+        'Nellore, Andhra Pradesh',
+        encryptField('Contact family immediately in case of emergency. Blood group is O+ve.'),
+        null,
+        ishrathOfflinePayload
+      ]
+    );
+
+    await dbRun(
+      `INSERT INTO emergency_contacts (id, vault_id, name, relationship, phone, priority, notify_on_access, can_authorize_tier1)
+       VALUES (?, ?, ?, ?, ?, ?, 1, 1)`,
+      [uuidv4(), 'AV-9017S', 'Family Guardian', 'Parent', '+919848012345', 1]
+    );
+  }
+
+  console.log('Seed database ready with Ramesh Patel (AV-8842), Priya Sharma (AV-7721), and Ishrath Shaik (AV-9017S)!');
 }
 
 module.exports = { seedData };

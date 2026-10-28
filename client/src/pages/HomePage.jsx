@@ -23,7 +23,9 @@ export function HomePage({
   onOpenFeaturePhone,
   onOpenAudit,
   onOpenDashboard,
-  currentVaultId = 'AV-8842'
+  currentVaultId = 'AV-8842',
+  triggerRecovery = false,
+  onRecoveryClosed
 }) {
   const { t, speakText, lang, formatMedicalSpeech, translateName, translateRelationship } = useLanguage();
   const [manualId, setManualId] = useState('');
@@ -33,6 +35,15 @@ export function HomePage({
 
   // Vault Recovery State (for recovering previously created vaults)
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+
+  useEffect(() => {
+    if (triggerRecovery) {
+      setShowRecoveryModal(true);
+      setRecoveryStep('phone');
+      setRecoveryError('');
+      if (onRecoveryClosed) onRecoveryClosed();
+    }
+  }, [triggerRecovery]);
   const [recoveryPhone, setRecoveryPhone] = useState('');
   const [recoveryStep, setRecoveryStep] = useState('phone'); // 'phone' | 'otp'
   const [recoveryMatch, setRecoveryMatch] = useState(null);
@@ -75,8 +86,9 @@ export function HomePage({
 
   const handleSearchVaultForRecovery = async (e) => {
     e.preventDefault();
-    if (!recoveryPhone.trim() || recoveryPhone.replace(/[^0-9]/g, '').length < 8) {
-      setRecoveryError('Please enter a valid mobile number (min 8 digits)');
+    const queryTerm = recoveryPhone.trim();
+    if (!queryTerm || queryTerm.length < 2) {
+      setRecoveryError('Please enter your Vault ID (e.g. AV-9017S), registered mobile number, or full name');
       return;
     }
     setRecoveryLoading(true);
@@ -85,12 +97,12 @@ export function HomePage({
       const res = await fetch('/api/vault/check-existing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: recoveryPhone.trim() })
+        body: JSON.stringify({ query: queryTerm, phone: queryTerm, name: queryTerm, id: queryTerm })
       });
       const data = await res.json();
       if (!data.found) {
         setRecoveryLoading(false);
-        setRecoveryError('No emergency vault found matching this phone number. Please check the number or create a new vault.');
+        setRecoveryError(`No emergency vault found matching "${queryTerm}". Please check your Vault ID, phone, or name.`);
         return;
       }
 
@@ -382,6 +394,38 @@ export function HomePage({
       {/* CORE 3 CHOICES (SHOWN WHEN NO USER VAULT EXISTS OR WHEN USER HAS NOT CREATED YET) */}
       {!hasVaults && (
         <div className="space-y-4">
+          {/* Prominent Recovery / Restore Card for Existing Vault Owners */}
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-3xl shadow-xl border-2 border-indigo-500/60 flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-900">
+                <RotateCcw className="w-6 h-6 text-indigo-200" />
+              </div>
+              <div className="text-left">
+                <h4 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                  <span>Already Created an Emergency Vault Before?</span>
+                  <span className="text-[10px] bg-emerald-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Instant Restore
+                  </span>
+                </h4>
+                <p className="text-xs text-indigo-200/90 mt-0.5">
+                  Lost your vault on this browser or switching devices? Enter your <strong>Vault ID (e.g. AV-9017S)</strong>, registered phone, or name to restore it immediately.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowRecoveryModal(true);
+                setRecoveryStep('phone');
+                setRecoveryError('');
+              }}
+              className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-950 shrink-0 transition-transform active:scale-95 cursor-pointer flex items-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Restore My Vault</span>
+            </button>
+          </div>
+
           <div className="text-center">
             <span className="text-xs font-black uppercase tracking-widest text-slate-400">
               {t('choose_action_title')}
@@ -824,17 +868,20 @@ export function HomePage({
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    {t('registered_mobile_number')}
+                    Vault ID, Registered Mobile Number, or Full Name
                   </label>
                   <input
-                    type="tel"
+                    type="text"
                     value={recoveryPhone}
                     onChange={(e) => setRecoveryPhone(e.target.value)}
-                    placeholder="e.g. +91 98250 99991"
+                    placeholder="e.g. AV-9017S, +91 98480 12345, or Ishrath Shaik"
                     className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-indigo-600 focus:outline-none text-base font-bold text-slate-900"
                     autoFocus
                     required
                   />
+                  <span className="text-[11px] text-slate-500 mt-1 block">
+                    Tip: Enter your Vault ID (like <strong>AV-9017S</strong>) to immediately find your records.
+                  </span>
                 </div>
 
                 <div className="pt-2 flex items-center justify-end gap-2">
